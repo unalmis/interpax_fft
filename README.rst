@@ -21,25 +21,6 @@ interpax_fft is installable with `pip`:
     pip install interpax_fft
 
 
-
-Usage
-=====
-
-.. code-block:: python
-
-    import jax.numpy as jnp
-    import numpy as np
-    from interpax import interp1d
-
-    xp = jnp.linspace(0, 2 * np.pi, 100)
-    xq = jnp.linspace(0, 2 * np.pi, 10000)
-    f = lambda x: jnp.sin(x)
-    fp = f(xp)
-
-    fq = interp1d(xq, xp, fp, method="cubic")
-    np.testing.assert_allclose(fq, f(xq), rtol=1e-6, atol=1e-5)
-
-
 For full details of various options see the `API documentation <https://interpax_fft.readthedocs.io/en/latest/api.html>`__
 
 

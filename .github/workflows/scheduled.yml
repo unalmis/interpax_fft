@@ -28,7 +28,7 @@ jobs:
         run: |
           pwd
           lscpu
-          python -m pytest -v --durations=0 --cov-report xml:cov.xml --cov-config=setup.cfg --cov=interpax/ --db ./prof.db
+          python -m pytest -v --durations=0 --cov-report xml:cov.xml --cov-config=setup.cfg --cov=interpax_fft/ --db ./prof.db
       - name: save coverage file and plot comparison results
         if: always()
         uses: actions/upload-artifact@v5
