@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: interpax_fft
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kaya
+    family-names: Unalmis
+    email: kunalmis@stanford.edu
+    affiliation: Stanford University
+    orcid: 'https://orcid.org/0000-0002-1755-6764'
+identifiers:
+  - type: url
+    value: 'https://github.com/unalmis/interpax_fft'
+    description: 'Github repository for interpax_fft'
+repository-code: 'https://github.com/unalmis/interpax_fft'
+url: 'https://interpax_fft.readthedocs.io'
+repository-artifact: 'https://pypi.org/project/interpax_fft/'
+license: MIT
