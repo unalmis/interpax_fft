@@ -1,4 +1,3 @@
-
 ############
 interpax_fft
 ############
@@ -16,20 +15,20 @@ Installation
 
 ``interpax_fft`` is installable with `pip`:
 
-.. code-block:: console
+.. code-block:: sh
 
     pip install interpax_fft
 
 
-For full details of various options see the `API documentation <https://interpax_fft.readthedocs.io/en/latest/api.html>`__.
+For full details of various options see the `API documentation <https://unalmis.github.io/interpax_fft/>`__.
 
 
 .. |License| image:: https://img.shields.io/github/license/unalmis/interpax_fft?color=blue&logo=open-source-initiative&logoColor=white
     :target: https://github.com/unalmis/interpax_fft/blob/master/LICENSE
     :alt: License
 
-.. |Docs| image:: https://img.shields.io/readthedocs/interpax_fft?logo=Read-the-Docs
-    :target: https://interpax_fft.readthedocs.io/en/latest/?badge=latest
+.. |Docs| image:: https://github.com/unalmis/interpax_fft/actions/workflows/docs.yml/badge.svg
+    :target: https://unalmis.github.io/interpax_fft/
     :alt: Documentation
 
 .. |UnitTests| image:: https://github.com/unalmis/interpax_fft/actions/workflows/unittest.yml/badge.svg

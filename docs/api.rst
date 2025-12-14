@@ -2,8 +2,8 @@
 API Documentation
 =================
 
-Uniform FFT interpolation in 1D and 2D
---------------------------------------
+Uniform FFT interpolation
+-------------------------
 
 .. autosummary::
     :toctree: _api/
@@ -14,8 +14,8 @@ Uniform FFT interpolation in 1D and 2D
     interpax_fft.irfft_interp1d
     interpax_fft.irfft_interp2d
 
-Non-uniform MMT interpolation in 1D and 2D
-------------------------------------------
+Non-uniform MMT interpolation
+-----------------------------
 
 .. autosummary::
     :toctree: _api/
