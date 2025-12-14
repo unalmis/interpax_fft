@@ -343,3 +343,5 @@ def test_fourier_chebyshev(func, X, Y):
     c = rfft(c, axis=-2, norm="forward")
     assert c.shape == series._c.shape
     np.testing.assert_allclose(c, series._c, atol=1e-14)
+
+    assert np.isfinite(series.harmonics()).all()

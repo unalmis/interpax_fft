@@ -309,26 +309,6 @@ class FourierChebyshevSeries(Module):
             axis=-1,
         ) * (Y - self.lobatto)
 
-    def harmonics(self):
-        """Real spectral coefficients aₘₙ of the interpolating polynomial.
-
-        The order of the returned coefficient array
-        matches the Vandermonde matrix formed by an outer
-        product of Fourier and Chebyshev matrices with order
-        [sin(k𝐱), ..., sin(𝐱), 1, cos(𝐱), ..., cos(k𝐱)]
-        ⊗ [T₀(𝐲), T₁(𝐲), ..., Tₙ(𝐲)]
-
-        When ``self.X`` is even the sin(k𝐱) coefficient is zero and is excluded.
-
-        Returns
-        -------
-        a_mn : jnp.ndarray
-            Shape (..., X, Y).
-            Real valued spectral coefficients for Fourier-Chebyshev series.
-
-        """
-        return rfft_to_trig(cheb_from_dct(self._c), self.X, axis=-2)
-
     def compute_cheb(self, x):
         """Evaluate at coordinate ``x`` to get set of 1D Chebyshev series in ``y``.
 
@@ -349,6 +329,26 @@ class FourierChebyshevSeries(Module):
         cheb = cheb_from_dct(irfft_mmt(x, self._c[..., None, :, :], self.X, axis=-2))
         assert cheb.shape[-2:] == (x.shape[-2], self.Y)
         return cheb
+
+    def harmonics(self):
+        """Real spectral coefficients aₘₙ of the interpolating polynomial.
+
+        The order of the returned coefficient array
+        matches the Vandermonde matrix formed by an outer
+        product of Fourier and Chebyshev matrices with order
+        [sin(k𝐱), ..., sin(𝐱), 1, cos(𝐱), ..., cos(k𝐱)]
+        ⊗ [T₀(𝐲), T₁(𝐲), ..., Tₙ(𝐲)]
+
+        When ``self.X`` is even the sin(k𝐱) coefficient is zero and is excluded.
+
+        Returns
+        -------
+        a_mn : jnp.ndarray
+            Shape (..., X, Y).
+            Real valued spectral coefficients for Fourier-Chebyshev series.
+
+        """
+        return rfft_to_trig(cheb_from_dct(self._c), self.X, axis=-2)
 
 
 def _coords(x, y, L):

@@ -229,9 +229,14 @@ def irfft2_mmt_pos(
     n = (n0, n1)
     d = (domain0, domain1)
     f, r = np.argsort(axes)
-    modes_f, modes_r = rfft2_modes(n[f], n[r], d[f], d[r])
-    vander = rfft2_vander(x[f], x[r], modes_f, modes_r, d[f][0], d[r][0])
-    return jnp.einsum("...mn, ...mn", vander, a).real
+    vf, vr = rfft2_modes(n[f], n[r], d[f], d[r])
+    vf = jnp.exp(1j * vf * (x[f] - d[f][0])[..., None])
+    vr = jnp.exp(1j * vr * (x[r] - d[r][0])[..., None])
+
+    if n[f] > n[r]:
+        return jnp.einsum("...r, ...r", vr, jnp.einsum("...f, ...fr", vf, a)).real
+    else:
+        return jnp.einsum("...f, ...f", vf, jnp.einsum("...r, ...fr", vr, a)).real
 
 
 def rfft2_vander(
@@ -245,10 +250,6 @@ def rfft2_vander(
     inverse_idx_rfft=None,
 ):
     """Return Vandermonde matrix for complex Fourier modes.
-
-    Warnings
-    --------
-    Reduce with einsum to save memory.
 
     Parameters
     ----------
