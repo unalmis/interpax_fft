@@ -95,7 +95,7 @@ requesting existed.
 Before Submitting An Enhancement Suggestion
 -------------------------------------------
 
--  `Check the documentation <https://interpax_fft.readthedocs.io/en/latest/>`__
+-  `Check the documentation <https://unalmis.github.io/interpax_fft/>`__
    for tips — you might discover that the enhancement is already available.
 -  `Perform a cursory search <https://github.com/unalmis/interpax_fft/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement>`__
    to see if the enhancement has already been suggested. If it has, add

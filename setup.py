@@ -54,6 +54,6 @@ setup(
         "Issues Tracker": "https://github.com/unalmis/interpax_fft/issues",
         "Contributing": "https://github.com/unalmis/interpax_fft/blob/master/CONTRIBUTING.rst",  # noqa: E501
         "Source Code": "https://github.com/unalmis/interpax_fft/",
-        "Documentation": "https://interpax_fft.readthedocs.io/",
+        "Documentation": "https://unalmis.github.io/interpax_fft/",
     },
 )

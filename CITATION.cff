@@ -15,6 +15,6 @@ identifiers:
     value: 'https://github.com/unalmis/interpax_fft'
     description: 'Github repository for interpax_fft'
 repository-code: 'https://github.com/unalmis/interpax_fft'
-url: 'https://interpax_fft.readthedocs.io'
+url: 'https://unalmis.github.io/interpax_fft/'
 repository-artifact: 'https://pypi.org/project/interpax_fft/'
 license: MIT
