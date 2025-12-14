@@ -1,0 +1,6 @@
+﻿interpax\_fft.ifft\_mmt
+=======================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: ifft_mmt
