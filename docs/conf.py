@@ -25,12 +25,12 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("."))
 sys.path.append(os.path.abspath("../"))
-import interpax
+import interpax_fft
 
-project = "interpax"
-copyright = "2023, Rory Conlin"
-author = "Rory Conlin"
-version = interpax.__version__
+project = "interpax_fft"
+copyright = "2024, Kaya Unalmis"
+author = "Kaya Unalmis"
+version = interpax_fft.__version__
 release = version
 
 
@@ -52,9 +52,9 @@ extensions = [
     "sphinx_github_style",
 ]
 # options for sphinx_github_style
-top_level = "interpax"
+top_level = "interpax_fft"
 linkcode_blob = "head"
-linkcode_url = r"https://github.com/f0uriest/interpax/"
+linkcode_url = r"https://github.com/unalmis/interpax_fft"
 linkcode_link_text = "Source"
 
 
@@ -101,7 +101,7 @@ def linkcode_resolve(domain, info):
         print("Failed to get head")  # so no head?
         blob = "main"
 
-    linkcode_url = r"https://github.com/f0uriest/interpax/"
+    linkcode_url = r"https://github.com/unalmis/interpax_fft"
     linkcode_url = linkcode_url.strip("/") + f"/blob/{blob}/"
     linkcode_url += "{filepath}#L{linestart}-L{linestop}"
 
@@ -272,7 +272,7 @@ html_show_copyright = True
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "interpax"
+htmlhelp_basename = "interpax_fft"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -356,14 +356,14 @@ latex_elements = {
         \vspace*{80mm} %% % * is used to give space from top
 
         \centering
-        \textbf{\Huge {interpax Documentation}}
+        \textbf{\Huge {interpax_fft Documentation}}
 
         \vspace*{2mm}
 
         \vspace*{10mm}
 
         \centering
-        \textbf{ \Large {Rory Conlin}}
+        \textbf{ \Large {Kaya Unalmis}}
 
         \vspace*{10mm}
 
@@ -394,9 +394,9 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "interpax.tex",
-        "interpax Documentation",
-        "Rory Conlin",
+        "interpax_fft.tex",
+        "interpax_fft Documentation",
+        "Kaya Unalmis",
         "report",
         True,
     ),

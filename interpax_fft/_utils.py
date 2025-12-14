@@ -1,4 +1,7 @@
+"""General utilities."""
+
 import functools
+import operator
 import warnings
 from typing import Type, Union
 
@@ -10,6 +13,20 @@ from numpy.typing import ArrayLike
 # jax.typing.ArrayLike and jaxtyping.ArrayLike don't include eg tuples,lists,iterables
 # like np.ArrayLike. This combines all the usual array types
 Arrayish = Union[Array, ArrayLike]
+
+
+def isnonnegint(x):
+    """Determine if x is a non-negative integer."""
+    try:
+        _ = operator.index(x)
+    except TypeError:
+        return False
+    return x >= 0
+
+
+def isposint(x):
+    """Determine if x is a strictly positive integer."""
+    return isnonnegint(x) and (x > 0)
 
 
 def errorif(

@@ -2,49 +2,45 @@
 ############
 interpax_fft
 ############
-|License| |DOI| |Issues| |Pypi|
+|License| |Issues| |Pypi|
 
 |Docs| |UnitTests| |Codecov|
 
-interpax_fft is a library for Fourier interpolation and function approximation using JAX.
+``interpax_fft`` is a library for Fourier interpolation and function approximation using JAX.
 
-Basic methods for Fourier interpolation.
-
+``interpax_fft`` extends `interpax <https://github.com/f0uriest/interpax>`__ with
+more utilities for (pseudo-spectral) interpolation.
 
 Installation
 ============
 
-interpax_fft is installable with `pip`:
+``interpax_fft`` is installable with `pip`:
 
 .. code-block:: console
 
     pip install interpax_fft
 
 
-For full details of various options see the `API documentation <https://interpax_fft.readthedocs.io/en/latest/api.html>`__
+For full details of various options see the `API documentation <https://interpax_fft.readthedocs.io/en/latest/api.html>`__.
 
 
 .. |License| image:: https://img.shields.io/github/license/unalmis/interpax_fft?color=blue&logo=open-source-initiative&logoColor=white
     :target: https://github.com/unalmis/interpax_fft/blob/master/LICENSE
     :alt: License
 
-.. |DOI| image:: https://zenodo.org/badge/706703896.svg
-    :target: https://zenodo.org/doi/10.5281/zenodo.10028967
-    :alt: DOI
-
-.. |Docs| image:: https://img.shields.io/readthedocs/interpax?logo=Read-the-Docs
-    :target: https://interpax.readthedocs.io/en/latest/?badge=latest
+.. |Docs| image:: https://img.shields.io/readthedocs/interpax_fft?logo=Read-the-Docs
+    :target: https://interpax_fft.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation
 
 .. |UnitTests| image:: https://github.com/unalmis/interpax_fft/actions/workflows/unittest.yml/badge.svg
     :target: https://github.com/unalmis/interpax_fft/actions/workflows/unittest.yml
     :alt: UnitTests
 
-.. |Codecov| image:: https://codecov.io/github/unalmis/interpax_fft/graph/badge.svg?token=MB11I7WE3I
-    :target: https://codecov.io/github/unalmis/interpax_fft
+.. |Codecov| image:: https://codecov.io/gh/unalmis/interpax_fft/graph/badge.svg?token=LHXGSGB9DF
+    :target: https://codecov.io/gh/unalmis/interpax_fft
     :alt: Coverage
 
-.. |Issues| image:: https://img.shields.io/github/issues/unalmis/interpax
+.. |Issues| image:: https://img.shields.io/github/issues/unalmis/interpax_fft
     :target: https://github.com/unalmis/interpax_fft/issues
     :alt: GitHub issues
 
