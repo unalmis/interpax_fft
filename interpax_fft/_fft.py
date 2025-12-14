@@ -1,3 +1,5 @@
+"""Uniform FFT interpolation."""
+
 from typing import Optional
 
 import jax
@@ -125,7 +127,6 @@ def rfft_interp2d(
     """
     nx, ny = f.shape[:2]
 
-    # https://github.com/f0uriest/interpax/pull/117
     if (sx is None or jnp.size(sx) == 1) and (sy is None or jnp.size(sy) == 1):
         if n1 < nx:
             f = rfft_interp1d(f, n1, sx, dx)

@@ -1,4 +1,4 @@
-"""Tests for FFT interpolation."""
+"""Tests for uniform FFT interpolation."""
 
 import numpy as np
 import pytest

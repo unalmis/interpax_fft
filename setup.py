@@ -1,4 +1,4 @@
-"""Setup/build/install script for interpax."""
+"""Setup/build/install script for interpax_fft."""
 
 import os
 
