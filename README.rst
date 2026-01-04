@@ -13,7 +13,7 @@ more utilities for (pseudo-spectral) interpolation.
 Installation
 ============
 
-``interpax_fft`` is installable with `pip`:
+``interpax_fft`` is installable with ``pip``:
 
 .. code-block:: sh
 
