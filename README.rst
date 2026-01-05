@@ -24,7 +24,7 @@ For full details of various options see the `API documentation <https://unalmis.
 
 
 .. |License| image:: https://img.shields.io/github/license/unalmis/interpax_fft?color=blue&logo=open-source-initiative&logoColor=white
-    :target: https://github.com/unalmis/interpax_fft/blob/master/LICENSE
+    :target: https://github.com/unalmis/interpax_fft/blob/main/LICENSE
     :alt: License
 
 .. |Docs| image:: https://github.com/unalmis/interpax_fft/actions/workflows/docs.yml/badge.svg
