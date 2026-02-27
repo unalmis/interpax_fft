@@ -1,0 +1,149 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>interpax_fft.irfft_mmt &mdash; interpax_fft 0+untagged.1.g4c33e54 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=0745d1ac" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/github_style.css?v=1093691d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=c00a5260" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=c8929c0f"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="interpax_fft.irfft_mmt_pos" href="interpax_fft.irfft_mmt_pos.html" />
+    <link rel="prev" title="interpax_fft.irfft2_mmt_pos" href="interpax_fft.irfft2_mmt_pos.html" />
+    <link href="../_static/custom.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #3c4142" >
+
+          
+          
+          <a href="../index.html">
+            
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Public API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#uniform-fft-interpolation">Uniform FFT interpolation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#non-uniform-mmt-interpolation">Non-uniform MMT interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#series-expansions">Series expansions</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #3c4142" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">interpax_fft</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Documentation</a></li>
+      <li class="breadcrumb-item active">interpax_fft.irfft_mmt</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_api/interpax_fft.irfft_mmt.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="interpax_fft.irfft2_mmt_pos.html" class="btn btn-neutral float-left" title="interpax_fft.irfft2_mmt_pos" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="interpax_fft.irfft_mmt_pos.html" class="btn btn-neutral float-right" title="interpax_fft.irfft_mmt_pos" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="interpax-fft-irfft-mmt">
+<h1>interpax_fft.irfft_mmt<a class="headerlink" href="#interpax-fft-irfft-mmt" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="interpax_fft.irfft_mmt">
+<span class="sig-prename descclassname"><span class="pre">interpax_fft.</span></span><span class="sig-name descname"><span class="pre">irfft_mmt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">6.283185307179586)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/unalmis/interpax_fft/blob/4c33e5446baaa7231bba10599ea229453495cf6e/interpax_fft/_mmt.py#L35-L64"><span class="linkcode-link"><span class="pre">Source</span></span></a><a class="headerlink" href="#interpax_fft.irfft_mmt" title="Link to this definition"></a></dt>
+<dd><p>Evaluate Fourier coefficients <code class="docutils literal notranslate"><span class="pre">a</span></code> at <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+<p>Uses matrix multiplication transform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>jnp.ndarray</em>) – Real query points where interpolation is desired.
+Shape of <code class="docutils literal notranslate"><span class="pre">x</span></code> must broadcast with arrays of shape <code class="docutils literal notranslate"><span class="pre">np.delete(a.shape,axis)</span></code>.</p></li>
+<li><p><strong>a</strong> (<em>jnp.ndarray</em>) – Fourier coefficients <code class="docutils literal notranslate"><span class="pre">a=rfft(f,axis=axis,norm=&quot;forward&quot;)</span></code>.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Spectral resolution of <code class="docutils literal notranslate"><span class="pre">a</span></code>.</p></li>
+<li><p><strong>domain</strong> (<em>tuple</em><em>[</em><em>float</em><em>]</em>) – Domain over which samples were taken.</p></li>
+<li><p><strong>axis</strong> (<em>int</em>) – Axis along which to transform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fq</strong> (<em>jnp.ndarray</em>) – Real function value at query points.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="interpax_fft.irfft2_mmt_pos.html" class="btn btn-neutral float-left" title="interpax_fft.irfft2_mmt_pos" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="interpax_fft.irfft_mmt_pos.html" class="btn btn-neutral float-right" title="interpax_fft.irfft_mmt_pos" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kaya Unalmis.
+      <span class="lastupdated">Last updated on Feb 27, 2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

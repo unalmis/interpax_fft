@@ -1,0 +1,6 @@
+﻿interpax\_fft.rfft2\_vander
+===========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: rfft2_vander
