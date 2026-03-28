@@ -32,7 +32,7 @@ def test_fft_interp1d():
         fi = f1[sp][1]
         fs = fun(x[sp][1] + sx)
         np.testing.assert_allclose(
-            rfft_interp1d(fi, *fi.shape, sx, dx=x[sp][1][1] - x[sp][1][0]).squeeze(), fs
+            rfft_interp1d(fi, fi.shape[0], sx, dx=x[sp][1][1] - x[sp][1][0]).squeeze(), fs
         )
         for ep in ["o", "e"]:  # eval parity
             for s in ["up", "down"]:  # up or downsample
@@ -92,7 +92,8 @@ def test_fft_interp2d():
             np.testing.assert_allclose(
                 rfft_interp2d(
                     fi,
-                    *fi.shape,
+                    fi.shape[0],
+                    fi.shape[1],
                     shiftx,
                     shifty,
                     dx=np.diff(x[spx][1])[0],
