@@ -126,6 +126,7 @@ def rfft_interp2d(
         Interpolated (and possibly shifted) data points.
 
     """
+    f = asarray_inexact(f)
     nx, ny = f.shape[:2]
 
     if (sx is None or jnp.size(sx) == 1) and (sy is None or jnp.size(sy) == 1):
@@ -141,7 +142,7 @@ def rfft_interp2d(
             return rfft_interp1d(f.swapaxes(0, 1), n1, sx, dx)
 
     return irfft_interp2d(
-        jnp.fft.rfft2(asarray_inexact(f), axes=(0, 1), norm="forward"),
+        jnp.fft.rfft2(f, axes=(0, 1), norm="forward"),
         ny,
         n1,
         n2,
