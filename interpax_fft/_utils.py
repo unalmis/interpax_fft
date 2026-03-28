@@ -3,7 +3,7 @@
 import functools
 import operator
 import warnings
-from typing import Type, Union
+from typing import Any, Type, Union
 
 import jax
 import jax.numpy as jnp
@@ -15,7 +15,7 @@ from numpy.typing import ArrayLike
 Arrayish = Union[Array, ArrayLike]
 
 
-def isnonnegint(x):
+def isnonnegint(x: Any) -> bool:
     """Determine if x is a non-negative integer."""
     try:
         _ = operator.index(x)
@@ -24,7 +24,7 @@ def isnonnegint(x):
     return x >= 0
 
 
-def isposint(x):
+def isposint(x: Any) -> bool:
     """Determine if x is a strictly positive integer."""
     return isnonnegint(x) and (x > 0)
 
@@ -52,6 +52,8 @@ def warnif(
 def asarray_inexact(x: Num[Arrayish, "..."]) -> Inexact[Array, "..."]:
     """Convert to jax array with floating point dtype."""
     x = jnp.asarray(x)
+    if x.weak_type:  # preserve weakly typed things like scalars
+        return x
     dtype = x.dtype
     if not jnp.issubdtype(dtype, jnp.inexact):
         dtype = jnp.result_type(x, jnp.array(1.0))
