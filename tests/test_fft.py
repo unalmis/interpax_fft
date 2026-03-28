@@ -98,7 +98,7 @@ def test_fft_interp2d():
                     shiftx,
                     shifty,
                     dx=np.diff(x[spx][1])[0],
-                    dy=np.diff(y[spy][1])[0]
+                    dy=np.diff(y[spy][1])[0],
                 ).squeeze(),
                 fs,
             )
