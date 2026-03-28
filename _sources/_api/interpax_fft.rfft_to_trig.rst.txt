@@ -1,0 +1,6 @@
+﻿interpax\_fft.rfft\_to\_trig
+============================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: rfft_to_trig
