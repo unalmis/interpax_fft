@@ -704,6 +704,12 @@ class PiecewiseChebyshevSeries(Module):
     def intersect1d(self, k=0.0, eps=None, num_intersect=-1):
         """Coordinates z(x, yᵢ) such that fₓ(yᵢ) = k for every x.
 
+        Notes
+        -----
+        It is recommended to pip install ``orthax`` to use this method.
+        If ``orthax`` is not installed, numpy will be used, which is
+        less performant.
+
         Parameters
         ----------
         k : jnp.ndarray
