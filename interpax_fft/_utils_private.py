@@ -145,22 +145,6 @@ def subtract_first(c, k):
     )
 
 
-def subtract_last(c, k):
-    """Subtract ``k`` from last index of last axis of ``c``.
-
-    Semantically same as ``return c.at[...,-1].subtract(k)``,
-    but allows dimension to increase.
-    """
-    c_1 = c[..., -1] - k
-    return jnp.concatenate(
-        [
-            jnp.broadcast_to(c[..., :-1], (*c_1.shape, c.shape[-1] - 1)),
-            c_1[..., jnp.newaxis],
-        ],
-        axis=-1,
-    )
-
-
 def filter_distinct(r, sentinel, eps):
     """Set all but one of matching adjacent elements in ``r``  to ``sentinel``."""
     # eps needs to be low enough that close distinct roots do not get removed.

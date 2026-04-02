@@ -1,9 +1,9 @@
 """Tests for non-uniform MMT interpolation."""
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
-from jax import config, grad
 from jax.numpy.fft import rfft, rfft2
 from jax.scipy.fft import dct, idct
 from numpy.polynomial.chebyshev import (
@@ -31,9 +31,9 @@ from interpax_fft import (
     rfft_to_trig,
     trig_vander,
 )
-from interpax_fft._utils_private import bijection_to_disc
+from interpax_fft._utils_private import bijection_to_disc, flatten_mat
 
-config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 
 def _identity(x):
@@ -380,11 +380,19 @@ def test_z1_first_chebyshev():
         np.testing.assert_allclose(z1i, r[1])
         np.testing.assert_allclose(z2i, r[2])
 
+    z1 = flatten_mat(z1)
+    np.testing.assert_allclose(cheb.eval1d(z1, loop=False), cheb.eval1d(z1, loop=True))
+
     # tested more rigorously in downstream libraries
-    @grad
+    @jax.grad
     def fun(pitch_inv):
         z1, z2 = cheb.intersect1d(pitch_inv)
         return (z1 * z2).sum()
 
     out = fun(jnp.asarray(pitch_inv).astype(float))
     assert np.isfinite(out).all()
+
+    np.testing.assert_allclose(cheb.stitch(cheb.cheb), cheb.cheb)
+
+    with pytest.warns(UserWarning):
+        out = cheb.evaluate(cheb.Y - 1)

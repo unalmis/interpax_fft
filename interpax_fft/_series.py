@@ -49,6 +49,10 @@ except ImportError:
     # not an installation requirement
     pass
 
+from packaging import version
+
+_DCT_BUG = version.parse(jax.__version__) <= version.parse("0.7.2")
+
 
 def _coords(x, y, L):
     if L is None:
@@ -198,12 +202,11 @@ class DoubleChebyshevSeries(Module):
             "the grid resolution is less than the Chebyshev resolution.\n"
             f"Got Y = {Y} < {self.Y} = self.Y.",
         )
-        BUG = jax.__version_info__ <= (0, 7, 2)
         errorif(
-            self._c.ndim > 2 and BUG,
+            self._c.ndim > 2 and _DCT_BUG,
             msg="https://github.com/jax-ml/jax/issues/31836",
         )
-        axes = None if BUG else (-2, -1)
+        axes = None if _DCT_BUG else (-2, -1)
         return (
             idctn(self._c, type=2 - self.lobatto, s=(X, Y), axes=axes)
             * (X - self.lobatto)
@@ -573,22 +576,26 @@ class PiecewiseChebyshevSeries(Module):
         """Chebyshev spectral resolution."""
         return self.cheb.shape[-1]
 
-    def stitch(self):
+    @staticmethod
+    def stitch(cheb):
         """Enforce continuity of the piecewise series.
 
         In some applications, the given piecewise series
-        may not be continuous to machine precision due to imcomplete convergence
+        may not be continuous to machine precision due to incomplete convergence
         of some input.
         In that case, this method is useful to enforce continuity exactly
-        in the discrete system.
+        in the discrete system by adjusting the series in the next partition
+        to start where the previous series ends.
 
         """
+        cheb = jnp.atleast_2d(cheb)
         # evaluate at left boundary
-        f_0 = self.cheb[..., ::2].sum(-1) - self.cheb[..., 1::2].sum(-1)
+        f_0 = cheb[..., ::2].sum(-1) - cheb[..., 1::2].sum(-1)
         # evaluate at right boundary
-        f_1 = self.cheb.sum(-1)
+        f_1 = cheb.sum(-1)
         dfx = f_1[..., :-1] - f_0[..., 1:]  # Δf = f(xᵢ, y₁) - f(xᵢ₊₁, y₀)
-        self.cheb = self.cheb.at[..., 1:, 0].add(dfx.cumsum(-1))
+        cheb = cheb.at[..., 1:, 0].add(dfx.cumsum(-1))
+        return cheb
 
     def evaluate(self, Y):
         """Evaluate Chebyshev series at Y Chebyshev points.
@@ -744,7 +751,7 @@ class PiecewiseChebyshevSeries(Module):
         if eps is None:
             eps = max(jnp.finfo(jnp.array(1.0).dtype).eps, 2.5e-12)
 
-        # Add axis to use same k over all Chebyshev series of the piecewise c.
+        # Add axis to use same k over all Chebyshev series of the piecewise series.
         y, mask, df_dy = _intersect2d(self, jnp.atleast_1d(k)[..., None], eps=eps)
         df_dy = jnp.sign(df_dy)
         y = bijection_from_disc(y, *self.domain)
@@ -771,7 +778,7 @@ class PiecewiseChebyshevSeries(Module):
     def _check_shape(self, z1, z2, k):
         """Return shapes that broadcast with (k.shape[0], *self.cheb.shape[:-2], W)."""
         assert z1.shape == z2.shape
-        # Ensure pitch batch dim exists and add back dim to broadcast with wells.
+        # Ensure batch dim exists and add back dim to broadcast with wells.
         k = atleast_nd(self.cheb.ndim - 1, k)[..., None]
         # Same but back dim already exists.
         z1 = atleast_nd(self.cheb.ndim, z1)
@@ -912,7 +919,7 @@ class PiecewiseChebyshevSeries(Module):
             Shape (k.shape[0], ).
             Optional, k such that fₓ(yᵢ) = k.
         k_transparency : float
-            Transparency of pitch lines.
+            Transparency of horizontal pitch lines.
         klabel : float
             Label of intersect lines.
         title : str

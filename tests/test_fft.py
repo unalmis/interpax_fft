@@ -1,12 +1,15 @@
 """Tests for uniform FFT interpolation."""
 
+import warnings
+
+import jax
 import numpy as np
 import pytest
-from jax import config
+from packaging import version
 
 from interpax_fft import rfft_interp1d, rfft_interp2d
 
-config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 
 @pytest.mark.unit
@@ -53,7 +56,15 @@ def test_fft_interp1d():
 @pytest.mark.unit
 def test_fft_interp2d():
     """Test for 2d Fourier interpolation."""
+    _RFFT_BUG = version.parse(jax.__version__) <= version.parse("0.9.2")
 
+    with warnings.catch_warnings():
+        if _RFFT_BUG:
+            warnings.simplefilter("ignore")
+        _test_fft_interp2d()
+
+
+def _test_fft_interp2d():
     def fun2(x, y):
         return (
             2 * np.sin(1 * x[:, None])
@@ -90,6 +101,7 @@ def test_fft_interp2d():
         for spy in ["o", "e"]:  # source parity y
             fi = f2[spx][spy][1][1]
             fs = fun2(x[spx][1] + shiftx, y[spy][1] + shifty)
+
             np.testing.assert_allclose(
                 rfft_interp2d(
                     fi,
@@ -102,6 +114,7 @@ def test_fft_interp2d():
                 ).squeeze(),
                 fs,
             )
+
             for epx in ["o", "e"]:  # eval parity x
                 for epy in ["o", "e"]:  # eval parity y
                     for sx in ["up", "down"]:  # up or downsample x
@@ -120,15 +133,18 @@ def test_fft_interp2d():
                                 ye = 1
 
                             true = fun2(x[epx][xe] + shiftx, y[epy][ye] + shifty)
-                            interp = rfft_interp2d(
-                                f2[spx][spy][xs][ys],
-                                x[epx][xe].size,
-                                y[epy][ye].size,
-                                shiftx,
-                                shifty,
-                                dx=x[spx][xs][1] - x[spx][xs][0],
-                                dy=y[spy][ys][1] - y[spy][ys][0],
-                            ).squeeze()
+
                             np.testing.assert_allclose(
-                                interp, true, atol=1e-12, rtol=1e-12
+                                rfft_interp2d(
+                                    f2[spx][spy][xs][ys],
+                                    x[epx][xe].size,
+                                    y[epy][ye].size,
+                                    shiftx,
+                                    shifty,
+                                    dx=x[spx][xs][1] - x[spx][xs][0],
+                                    dy=y[spy][ys][1] - y[spy][ys][0],
+                                ).squeeze(),
+                                true,
+                                atol=1e-12,
+                                rtol=1e-12,
                             )
