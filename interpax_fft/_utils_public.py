@@ -3,7 +3,6 @@
 from functools import partial
 
 import jax.numpy as jnp
-from jax.numpy import flatnonzero, take
 
 from ._utils_private import Index, bijection_from_disc
 
@@ -122,7 +121,7 @@ def epigraph_and(points, df_dy, /):
     # there can be at most one inversion, and if it exists, it must be at the first
     # pair. To correct the inversion, it suffices to disqualify the first intersect
     # as a right boundary, except under an edge case of a series of inflection points.
-    idx = flatnonzero(points, size=2, fill_value=-1)
+    idx = jnp.flatnonzero(points, size=2, fill_value=-1)
     edge_case = (
         (df_dy[idx[0]] == 0)
         & (df_dy[idx[1]] < 0)
@@ -167,8 +166,8 @@ def take_mask(a, mask, /, *, size=-1, fill_value=None):
     """
     assert a.shape == mask.shape
     size = mask.size if (size is None or size < 0) else min(size, mask.size)
-    idx = flatnonzero(mask, size=size, fill_value=mask.size)
-    return take(
+    idx = jnp.flatnonzero(mask, size=size, fill_value=mask.size)
+    return jnp.take(
         a,
         idx,
         mode="fill",

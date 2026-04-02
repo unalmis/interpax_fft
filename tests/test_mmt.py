@@ -1,5 +1,7 @@
 """Tests for non-uniform MMT interpolation."""
 
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -29,6 +31,7 @@ from interpax_fft import (
     interp_rfft2,
     irfft_mmt,
     rfft_to_trig,
+    take_mask,
     trig_vander,
 )
 from interpax_fft._utils_private import bijection_to_disc, flatten_mat
@@ -396,3 +399,35 @@ def test_z1_first_chebyshev():
 
     with pytest.warns(UserWarning):
         out = cheb.evaluate(cheb.Y - 1)
+
+
+@partial(jnp.vectorize, signature="(m)->()")
+def _last_value(a):
+    """Return the last non-nan value in ``a``."""
+    a = a[::-1]
+    idx = jnp.squeeze(jnp.flatnonzero(~jnp.isnan(a), size=1, fill_value=0))
+    return a[idx]
+
+
+@pytest.mark.unit
+def test_take_mask():
+    """Test custom masked array operation."""
+    rows = 5
+    cols = 7
+    a = np.random.rand(rows, cols)
+    nan_idx = np.random.choice(rows * cols, size=(rows * cols) // 2, replace=False)
+    a.ravel()[nan_idx] = np.nan
+    taken = take_mask(a, ~np.isnan(a))
+    last = _last_value(taken)
+    for i in range(rows):
+        desired = a[i, ~np.isnan(a[i])]
+        assert np.array_equal(
+            taken[i],
+            np.pad(desired, (0, cols - desired.size), constant_values=np.nan),
+            equal_nan=True,
+        )
+        assert np.array_equal(
+            last[i],
+            desired[-1] if desired.size else np.nan,
+            equal_nan=True,
+        )
