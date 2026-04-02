@@ -1,4 +1,4 @@
-"""Fast transformable series."""
+"""Function approximation with series expansions."""
 
 from functools import partial
 
