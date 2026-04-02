@@ -188,12 +188,6 @@ def irfft_interp2d(
         Interpolated (and possibly shifted) data points.
 
     """
-    warnif(
-        _RFFT_BUG,
-        msg="Output will be incorrect on GPU.\n"
-        "See https://github.com/jax-ml/jax/pull/34123.",
-    )
-
     c = asarray_inexact(c)
     nx = c.shape[0]
     ny_half = c.shape[1]
@@ -212,6 +206,11 @@ def irfft_interp2d(
 
     c = _fft_pad(jnp.fft.fftshift(c, 0), n1, 0)
     if n2 >= ny:
+        warnif(
+            _RFFT_BUG,
+            msg="Output will be incorrect on GPU.\n"
+            "See https://github.com/jax-ml/jax/pull/34123.",
+        )
         return jnp.fft.irfft2(c, (n1, n2), axes=(0, 1), norm="forward")
 
     if (n2 >= ny_half) and (ny % 2 == 0):
