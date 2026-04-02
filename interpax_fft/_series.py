@@ -690,7 +690,8 @@ class PiecewiseChebyshevSeries(Module):
             Chebyshev series evaluated at z.
 
         """
-        cheb = setdefault(cheb, self.cheb)
+        if cheb is None:
+            cheb = self.cheb
         x_idx, y = self._isomorphism_to_C2(z)
         y = bijection_to_disc(y, *self.domain)
 
