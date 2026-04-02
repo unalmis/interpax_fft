@@ -5,8 +5,11 @@ from typing import Optional
 import jax
 import jax.numpy as jnp
 from jaxtyping import Array, ArrayLike, Inexact, Num
+from packaging import version
 
-from ._utils_private import asarray_inexact, wrap_jit
+from ._utils_private import asarray_inexact, warnif, wrap_jit
+
+_RFFT_BUG = version.parse(jax.__version__) <= version.parse("0.9.2")
 
 
 @wrap_jit(static_argnames=["n"])
@@ -185,6 +188,12 @@ def irfft_interp2d(
         Interpolated (and possibly shifted) data points.
 
     """
+    warnif(
+        _RFFT_BUG,
+        msg="Output will be incorrect on GPU.\n"
+        "See https://github.com/jax-ml/jax/pull/34123.",
+    )
+
     c = asarray_inexact(c)
     nx = c.shape[0]
     ny_half = c.shape[1]

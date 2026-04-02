@@ -31,7 +31,7 @@ from interpax_fft import (
     rfft_to_trig,
     trig_vander,
 )
-from interpax_fft._utils_private import bijection_to_disc
+from interpax_fft._utils_private import bijection_to_disc, flatten_mat
 
 config.update("jax_enable_x64", True)
 
@@ -380,6 +380,9 @@ def test_z1_first_chebyshev():
         np.testing.assert_allclose(z1i, r[1])
         np.testing.assert_allclose(z2i, r[2])
 
+    z1 = flatten_mat(z1)
+    np.testing.assert_allclose(cheb.eval1d(z1, loop=False), cheb.eval1d(z1, loop=True))
+
     # tested more rigorously in downstream libraries
     @grad
     def fun(pitch_inv):
@@ -388,3 +391,8 @@ def test_z1_first_chebyshev():
 
     out = fun(jnp.asarray(pitch_inv).astype(float))
     assert np.isfinite(out).all()
+
+    np.testing.assert_allclose(cheb.stitch(cheb.cheb), cheb.cheb)
+
+    with pytest.raises(UserWarning):
+        out = cheb.evaluate(cheb.Y - 1)
