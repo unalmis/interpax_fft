@@ -208,8 +208,9 @@ def irfft_interp2d(
     if n2 >= ny:
         warnif(
             _RFFT_BUG,
-            msg="Output will be incorrect on GPU.\n"
-            "See https://github.com/jax-ml/jax/pull/34123.",
+            msg="Your version of JAX has bugs.\n"
+            "Output may be incorrect on GPU.\n"
+            "See https://github.com/jax-ml/jax/pull/36383.",
         )
         return jnp.fft.irfft2(c, (n1, n2), axes=(0, 1), norm="forward")
 

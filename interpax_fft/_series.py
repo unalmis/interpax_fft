@@ -190,6 +190,12 @@ class DoubleChebyshevSeries(Module):
             ``ChebyshevSeries.nodes(X,Y,L,self.domain_x,self.domain_y,self.lobatto)``.
 
         """
+        errorif(
+            _DCT_BUG,
+            msg="Your version of JAX has bugs.\n"
+            "https://github.com/jax-ml/jax/issues/31836.\n"
+            "https://github.com/jax-ml/jax/pull/34123.",
+        )
         warnif(
             X < self.X,
             msg="Frequency spectrum of DCT interpolation will be truncated because "
@@ -202,13 +208,8 @@ class DoubleChebyshevSeries(Module):
             "the grid resolution is less than the Chebyshev resolution.\n"
             f"Got Y = {Y} < {self.Y} = self.Y.",
         )
-        errorif(
-            self._c.ndim > 2 and _DCT_BUG,
-            msg="https://github.com/jax-ml/jax/issues/31836",
-        )
-        axes = None if _DCT_BUG else (-2, -1)
         return (
-            idctn(self._c, type=2 - self.lobatto, s=(X, Y), axes=axes)
+            idctn(self._c, type=2 - self.lobatto, s=(X, Y), axes=(-2, -1))
             * (X - self.lobatto)
             * (Y - self.lobatto)
         )
