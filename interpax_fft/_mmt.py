@@ -1,11 +1,12 @@
-"""Non-uniform MMT interpolation."""
+"""Interpolation with matrix multiplication transform (MMT)."""
 
 import jax.numpy as jnp
 import numpy as np
 from jax.numpy.fft import rfft, rfft2
 from jax.scipy.fft import dct
 
-from ._utils import Index, errorif
+from ._utils_private import Index, errorif
+from ._utils_public import cheb_from_dct
 
 
 def interp_rfft(x, f, domain=(0, 2 * jnp.pi), axis=-1):
@@ -321,45 +322,6 @@ def rfft2_modes(n_fft, n_rfft, domain_fft=(0, 2 * jnp.pi), domain_rfft=(0, 2 * j
         n_rfft, (domain_rfft[1] - domain_rfft[0]) / (2 * jnp.pi * n_rfft)
     )
     return modes_fft, modes_rfft
-
-
-def cheb_from_dct(a, axis=-1):
-    """Get discrete Chebyshev transform from discrete cosine transform.
-
-    Parameters
-    ----------
-    a : jnp.ndarray
-        Discrete cosine transform coefficients, e.g.
-        ``a=dct(f,type=2,axis=axis,norm="forward")``.
-    axis : int
-        Axis along which to transform.
-
-    Returns
-    -------
-    cheb : jnp.ndarray
-        Chebyshev coefficients along ``axis``.
-
-    """
-    return a.at[Index.get(0, axis, a.ndim)].divide(2)
-
-
-def dct_from_cheb(cheb, axis=-1):
-    """Get discrete cosine transform from discrete Chebyshev transform.
-
-    Parameters
-    ----------
-    cheb : jnp.ndarray
-        Discrete Chebyshev transform coefficients, e.g.``cheb_from_dct(a)``.
-    axis : int
-        Axis along which to transform.
-
-    Returns
-    -------
-    a : jnp.ndarray
-        Chebyshev coefficients along ``axis``.
-
-    """
-    return cheb.at[Index.get(0, axis, cheb.ndim)].multiply(2)
 
 
 def interp_dct(x, f, lobatto=False, axis=-1):

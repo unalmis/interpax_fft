@@ -75,6 +75,100 @@ def wrap_jit(*args, **kwargs):
     return wrapper
 
 
+def setdefault(val, default, cond=None):
+    """Return val if condition is met, otherwise default.
+
+    If cond is None, then it checks if val is not None, returning val
+    or default accordingly.
+    """
+    return val if cond or (cond is None and val is not None) else default
+
+
+def bijection_from_disc(x, a, b):
+    """[−1, 1] ∋ x ↦ y ∈ [a, b]."""
+    return 0.5 * (b - a) * (x + 1) + a
+
+
+def bijection_to_disc(x, a, b):
+    """[a, b] ∋ x ↦ y ∈ [−1, 1]."""
+    return 2 * (x - a) / (b - a) - 1
+
+
+def atleast_nd(ndmin, ary):
+    """Adds dimensions to front if necessary."""
+    return jnp.array(ary, ndmin=ndmin) if jnp.ndim(ary) < ndmin else ary
+
+
+def atleast_3d_mid(ary):
+    """Like np.atleast_3d but if adds dim at axis 1 for 2d arrays."""
+    ary = jnp.atleast_2d(ary)
+    return ary[:, jnp.newaxis] if ary.ndim == 2 else ary
+
+
+def atleast_2d_end(ary):
+    """Like np.atleast_2d but if adds dim at axis 1 for 1d arrays."""
+    ary = jnp.atleast_1d(ary)
+    return ary[:, jnp.newaxis] if ary.ndim == 1 else ary
+
+
+def flatten_mat(y, axes=2):
+    """Flatten matrix to vector.
+
+    Parameters
+    ----------
+    axes : int
+        Number of trailing axes to flatten into last dimension.
+        Default is two.
+
+    Returns
+    -------
+    y : jnp.ndarray
+        Shape (*y.shape[:-axes], -1).
+
+    """
+    return y.reshape(*y.shape[:-axes], -1)
+
+
+def subtract_first(c, k):
+    """Subtract ``k`` from first index of last axis of ``c``.
+
+    Semantically same as ``return c.at[...,0].subtract(k)``,
+    but allows dimension to increase.
+    """
+    c_0 = c[..., 0] - k
+    return jnp.concatenate(
+        [
+            c_0[..., jnp.newaxis],
+            jnp.broadcast_to(c[..., 1:], (*c_0.shape, c.shape[-1] - 1)),
+        ],
+        axis=-1,
+    )
+
+
+def subtract_last(c, k):
+    """Subtract ``k`` from last index of last axis of ``c``.
+
+    Semantically same as ``return c.at[...,-1].subtract(k)``,
+    but allows dimension to increase.
+    """
+    c_1 = c[..., -1] - k
+    return jnp.concatenate(
+        [
+            jnp.broadcast_to(c[..., :-1], (*c_1.shape, c.shape[-1] - 1)),
+            c_1[..., jnp.newaxis],
+        ],
+        axis=-1,
+    )
+
+
+def filter_distinct(r, sentinel, eps):
+    """Set all but one of matching adjacent elements in ``r``  to ``sentinel``."""
+    # eps needs to be low enough that close distinct roots do not get removed.
+    # Otherwise, algorithms relying on continuity will fail.
+    mask = jnp.isclose(jnp.diff(r, axis=-1, prepend=sentinel), 0, atol=eps)
+    return jnp.where(mask, sentinel, r)
+
+
 class _Indexable:
     """Helper object for building indexes for indexed update functions.
 

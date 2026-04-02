@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 import numpy as np
 import pytest
-from jax import config
+from jax import config, grad
 from jax.numpy.fft import rfft, rfft2
 from jax.scipy.fft import dct, idct
 from numpy.polynomial.chebyshev import (
@@ -11,12 +11,14 @@ from numpy.polynomial.chebyshev import (
     chebinterpolate,
     chebpts1,
     chebpts2,
+    chebroots,
     chebval,
 )
 
 from interpax_fft import (
     DoubleChebyshevSeries,
     FourierChebyshevSeries,
+    PiecewiseChebyshevSeries,
     cheb_from_dct,
     cheb_pts,
     dct_from_cheb,
@@ -29,12 +31,12 @@ from interpax_fft import (
     rfft_to_trig,
     trig_vander,
 )
-from interpax_fft._interp_utils import bijection_to_disc
+from interpax_fft._utils_private import bijection_to_disc
 
 config.update("jax_enable_x64", True)
 
 
-def identity(x):
+def _identity(x):
     return x
 
 
@@ -209,10 +211,10 @@ def test_cheb_pts(N):
     [
         # Identity map known for bad Gibbs; if discrete Chebyshev transform
         # implemented correctly then won't see Gibbs.
-        (identity, 2, False),
-        (identity, 3, False),
-        (identity, 3, True),
-        (identity, 4, True),
+        (_identity, 2, False),
+        (_identity, 3, False),
+        (_identity, 3, True),
+        (_identity, 4, True),
     ],
 )
 def test_dct(f, M, lobatto):
@@ -345,3 +347,44 @@ def test_fourier_chebyshev(func, X, Y):
     np.testing.assert_allclose(c, series._c, atol=1e-14)
 
     assert np.isfinite(series.harmonics()).all()
+
+
+def _cheb_intersect(cheb, k):
+    cheb = cheb.copy()
+    cheb[0] = cheb[0] - k
+    roots = chebroots(cheb)
+    intersect = roots[np.logical_and(np.isreal(roots), np.abs(roots.real) < 1)].real
+    return intersect
+
+
+@pytest.mark.unit
+def test_z1_first_chebyshev():
+    """Test that intersectons are computed correctly."""
+
+    def f(z):
+        return -2 * np.cos(1 / (0.1 + z**2)) + 2
+
+    X, Y = 1, 10
+    alpha, zeta = FourierChebyshevSeries.nodes(X, Y).T
+    cheb = FourierChebyshevSeries(f(zeta).reshape(X, Y)).compute_cheb(fourier_pts(X))
+    cheb = PiecewiseChebyshevSeries(cheb)
+    pitch_inv = jnp.array([2, 3])
+    z1, z2 = cheb.intersect1d(pitch_inv)
+    cheb.check_intersect1d(z1, z2, pitch_inv)
+
+    bench = chebinterpolate(f, Y - 1)
+    for i in range(pitch_inv.size):
+        mask = z1[i] < z2[i]
+        z1i, z2i = z1[i][mask], z2[i][mask]
+        r = _cheb_intersect(bench, pitch_inv[i])
+        np.testing.assert_allclose(z1i, r[1])
+        np.testing.assert_allclose(z2i, r[2])
+
+    # tested more rigorously in downstream libraries
+    @grad
+    def fun(pitch_inv):
+        z1, z2 = cheb.intersect1d(pitch_inv)
+        return (z1 * z2).sum()
+
+    out = fun(jnp.asarray(pitch_inv).astype(float))
+    assert np.isfinite(out).all()

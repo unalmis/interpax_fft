@@ -2,10 +2,7 @@
 
 from . import _version
 from ._fft import irfft_interp1d, irfft_interp2d, rfft_interp1d, rfft_interp2d
-from ._interp_utils import cheb_pts, fourier_pts
 from ._mmt import (
-    cheb_from_dct,
-    dct_from_cheb,
     idct_mmt,
     ifft_mmt,
     interp_dct,
@@ -19,12 +16,28 @@ from ._mmt import (
     rfft_to_trig,
     trig_vander,
 )
-from ._series import DoubleChebyshevSeries, FourierChebyshevSeries
+from ._series import (
+    DoubleChebyshevSeries,
+    FourierChebyshevSeries,
+    PiecewiseChebyshevSeries,
+)
+from ._utils_public import (
+    cheb_from_dct,
+    cheb_pts,
+    dct_from_cheb,
+    epigraph_and,
+    fourier_pts,
+    take_mask,
+)
 
 __all__ = [
+    "DoubleChebyshevSeries",
+    "FourierChebyshevSeries",
+    "PiecewiseChebyshevSeries",
     "cheb_from_dct",
     "cheb_pts",
     "dct_from_cheb",
+    "epigraph_and",
     "fourier_pts",
     "idct_mmt",
     "ifft_mmt",
@@ -41,9 +54,8 @@ __all__ = [
     "rfft_interp1d",
     "rfft_interp2d",
     "rfft_to_trig",
+    "take_mask",
     "trig_vander",
-    "DoubleChebyshevSeries",
-    "FourierChebyshevSeries",
 ]
 
 __version__ = _version.get_versions()["version"]

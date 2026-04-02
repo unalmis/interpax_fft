@@ -1,4 +1,4 @@
-"""Uniform FFT interpolation."""
+"""Interpolation with fast Fourier transform (FFT)."""
 
 from typing import Optional
 
@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 from jaxtyping import Array, ArrayLike, Inexact, Num
 
-from ._utils import asarray_inexact, wrap_jit
+from ._utils_private import asarray_inexact, wrap_jit
 
 
 @wrap_jit(static_argnames=["n"])
