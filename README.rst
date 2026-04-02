@@ -7,7 +7,7 @@ interpax_fft
 
 ``interpax_fft`` is a library for Fourier interpolation and function approximation using JAX.
 
-``interpax_fft`` extends `interpax <https://github.com/f0uriest/interpax>`__ with
+`interpax_fft <https://github.com/unalmis/interpax_fft>`__ extends `interpax <https://github.com/f0uriest/interpax>`__ with
 more utilities for (pseudo-spectral) interpolation.
 
 Installation
