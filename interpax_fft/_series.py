@@ -789,7 +789,7 @@ class PiecewiseChebyshevSeries(Module):
         assert z1.ndim == z2.ndim == k.ndim == self.cheb.ndim
         return z1, z2, k
 
-    def check_intersect1d(self, z1, z2, k, eps=None, *, plot=True, **kwargs):
+    def check_intersect1d(self, z1, z2, k, *, plot=True, **kwargs):
         """Check that intersects are computed correctly.
 
         Parameters
@@ -802,9 +802,6 @@ class PiecewiseChebyshevSeries(Module):
         k : jnp.ndarray
             Shape must broadcast with self.cheb.shape[:-2].
             k such that fₓ(yᵢ) = k.
-        eps : float
-            Absolute tolerance with which to consider value as zero.
-            Default is near machine epsilon.
         plot : bool
             Whether to plot the piecewise spline and intersects for the given ``k``.
             For the plotting labels of ρ(l), α(m), it is assumed that the axis that
@@ -818,9 +815,6 @@ class PiecewiseChebyshevSeries(Module):
             Matplotlib (fig, ax) tuples for the 1D plot of each field line.
 
         """
-        if eps is None:
-            eps = max(jnp.finfo(jnp.array(1.0).dtype).eps, 2.5e-12)
-
         kwargs.setdefault("title", r"Intersects $z$ in epigraph$(f)$ s.t. $f(z) = k$")
         title = kwargs.pop("title")
         plots = []
