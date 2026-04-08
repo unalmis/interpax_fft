@@ -450,7 +450,7 @@ def _loop(y, cheb, x_idx):
     return c0 + c1 * y
 
 
-@partial(jax.custom_jvp, nondiff_argnames=("eps",))
+@partial(jax.custom_jvp, nondiff_argnums=(2,))
 def _intersect2d(o, k, eps):
     """Coordinates yᵢ such that f(x, yᵢ) = k(x).
 
@@ -520,7 +520,7 @@ def _intersect2d_jvp(eps, primals, tangents):
     o, k = primals
     do, dk = tangents
 
-    y, mask, df_dy = _intersect2d(o, k, eps=eps)
+    y, mask, df_dy = _intersect2d(o, k, eps)
     n = jnp.arange(o.Y)
     df_do = jnp.einsum("...yn, ...n", jnp.cos(n * jnp.arccos(y)[..., None]), do.cheb)
     dy = jnp.where(
