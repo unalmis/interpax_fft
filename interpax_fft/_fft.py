@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from jaxtyping import Array, ArrayLike, Inexact, Num
 from packaging import version
 
-from ._utils_private import asarray_inexact, warnif, wrap_jit
+from ._utils_private import asarray_inexact, wrap_jit
 
 _RFFT_BUG = version.parse(jax.__version__) <= version.parse("0.9.2")
 
