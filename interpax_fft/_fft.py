@@ -206,12 +206,14 @@ def irfft_interp2d(
 
     c = _fft_pad(jnp.fft.fftshift(c, 0), n1, 0)
     if n2 >= ny:
-        warnif(
-            _RFFT_BUG,
-            msg="Your version of JAX has bugs.\n"
-            "Output may be incorrect on GPU.\n"
-            "See https://github.com/jax-ml/jax/pull/36383.",
-        )
+        if _RFFT_BUG:
+            # https://github.com/jax-ml/jax/pull/36383
+            return jnp.fft.irfft(
+                jnp.fft.ifft(c, n=n1, axis=0, norm="forward"),
+                n=n2,
+                axis=1,
+                norm="forward",
+            )
         return jnp.fft.irfft2(c, (n1, n2), axes=(0, 1), norm="forward")
 
     if (n2 >= ny_half) and (ny % 2 == 0):
