@@ -36,6 +36,11 @@ from interpax_fft import (
 )
 from interpax_fft._utils_private import bijection_to_disc, flatten_mat
 
+
+from packaging import version
+
+_DCT_BUG = version.parse(jax.__version__) <= version.parse("0.7.2")
+
 jax.config.update("jax_enable_x64", True)
 
 
@@ -239,7 +244,6 @@ def test_dct(f, M, lobatto):
     # https://github.com/jax-ml/jax/issues/23827
     # https://github.com/google/jax/issues/23895
     # https://github.com/jax-ml/jax/issues/31836
-    # Unresolved:
     # https://github.com/jax-ml/jax/issues/29426
     # https://github.com/jax-ml/jax/issues/29325
     from scipy.fft import dct as sdct
@@ -277,7 +281,12 @@ def test_dct(f, M, lobatto):
             err_msg="Scipy and JAX disagree.",
         )
         truth = f(n)[:, None] * _f_algebraic(cheb_pts(8))
-        np.testing.assert_allclose(cheb.evaluate(n.size, 8), truth)
+        if _DCT_BUG:
+            with pytest.raises(ValueError):
+                out = cheb.evaluate(n.size, 8)
+        else:
+            out = cheb.evaluate(n.size, 8)
+            np.testing.assert_allclose(out, truth)
 
 
 @pytest.mark.unit
@@ -322,7 +331,12 @@ def test_double_chebyshev(func, X, Y):
     _, x, y = DoubleChebyshevSeries.nodes(X, Y, L=1).T
     f = func(x, y).reshape(X, Y)
     series = DoubleChebyshevSeries(f)
-    np.testing.assert_allclose(series.evaluate(X, Y), f)
+    if _DCT_BUG:
+        with pytest.raises(ValueError):
+            out = series.evaluate(X, Y)
+    else:
+        out = series.evaluate(X, Y)
+        np.testing.assert_allclose(out, f)
 
     c = series.compute_cheb(cheb_pts(X))
     c = dct_from_cheb(c)
