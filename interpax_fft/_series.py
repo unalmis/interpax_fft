@@ -9,6 +9,7 @@ from equinox import Module
 from jax.numpy.fft import irfft, rfft
 from jax.scipy.fft import dct, dctn, idct, idctn
 
+from ._fft import irfft_interp1d
 from ._mmt import idct_mmt, irfft_mmt, rfft_to_trig
 from ._utils_private import (
     atleast_2d_end,
@@ -343,12 +344,10 @@ class FourierChebyshevSeries(Module):
             ``FourierChebyshevSeries.nodes(X,Y,L,self.domain,self.lobatto)``.
 
         """
-        # TODO: Preserve spectrum using same logic as _fft.py
         warnif(
-            X < self.X,
-            msg="Frequency spectrum of FFT interpolation will be truncated because "
-            "the grid resolution is less than the Fourier resolution.\n"
-            f"Got X = {X} < {self.X} = self.X.",
+            X <= self.X // 2,
+            msg="Frequency spectrum of FFT interpolation will be truncated.\n"
+            f"Got X = {X} <= {self.X // 2} = self.X // 2.",
         )
         warnif(
             Y < self.Y,
@@ -356,12 +355,10 @@ class FourierChebyshevSeries(Module):
             "the grid resolution is less than the Chebyshev resolution.\n"
             f"Got Y = {Y} < {self.Y} = self.Y.",
         )
-        return idct(
-            irfft(self._c, n=X, axis=-2, norm="forward"),
-            type=2 - self.lobatto,
-            n=Y,
-            axis=-1,
-        ) * (Y - self.lobatto)
+        c = jnp.moveaxis(
+            irfft_interp1d(jnp.moveaxis(self._c, -2, 0), self.X, X, dx=jnp.nan), 0, -2
+        )
+        return idct(c, type=2 - self.lobatto, n=Y, axis=-1) * (Y - self.lobatto)
 
     def compute_cheb(self, x):
         """Evaluate at coordinate ``x`` to get set of 1D Chebyshev series in ``y``.
@@ -405,8 +402,23 @@ class FourierChebyshevSeries(Module):
         return rfft_to_trig(cheb_from_dct(self._c), self.X, axis=-2)
 
 
-@partial(jax.checkpoint, prevent_cse=False)
-def _gather_reduce(y, cheb, x_idx):
+@jax.custom_jvp
+def _bigein(y, k, c):
+    return jnp.einsum("...m, ...m", jnp.cos(k * y[..., None]), c)
+
+
+@_bigein.defjvp
+def _bigein_jvp(primals, tangents):
+    # This allows AD to bypass storing the JVP of the vander tensor.
+    # Benchmarked to improve memory and speed significantly.
+    y, k, c = primals
+    dy, _, dc = tangents
+    df_dy = jnp.einsum("...m, ...m", -k * jnp.sin(k * y[..., None]), c)
+    return _bigein(y, k, c), _bigein(y, k, dc) + dy * df_dy
+
+
+@partial(jax.checkpoint, prevent_cse=False, static_argnums=(3,))
+def _gather_reduce(y, cheb, x_idx, start_degree):
     """Gather then reduce with checkpointing.
 
     Checkpointing this makes it faster and reduces memory.
@@ -416,10 +428,9 @@ def _gather_reduce(y, cheb, x_idx):
 
     On JAX version 0.7.2, enabling CSE did not increase memory.
     """
-    Y = cheb.shape[-1]
-    return jnp.einsum(
-        "...m, ...m",
-        jnp.cos(jnp.arange(Y) * y[..., None]),
+    return _bigein(
+        y,
+        jnp.arange(start_degree, start_degree + cheb.shape[-1]),
         jnp.take_along_axis(cheb, x_idx[..., None], axis=-2),
     )
 
@@ -670,7 +681,7 @@ class PiecewiseChebyshevSeries(Module):
         y += self.domain[0]
         return x_idx, y
 
-    def eval1d(self, z, cheb=None, loop=False):
+    def eval1d(self, z, cheb=None, loop=False, start_degree=0):
         """Evaluate piecewise Chebyshev series at coordinates z.
 
         Parameters
@@ -691,6 +702,9 @@ class PiecewiseChebyshevSeries(Module):
             If ``False``, then gathers a large block of memory and computes
             a product sum reduction while checkpointing the derivative
             to reduce memory consumption of the Jacobian.
+        start_degree : int
+            Degree of the lowest order Chebyshev coefficient at ``cheb.shape[...,0]``.
+            Default is 0.
 
         Returns
         -------
@@ -704,10 +718,11 @@ class PiecewiseChebyshevSeries(Module):
         y = bijection_to_disc(y, *self.domain)
 
         if loop and self.Y >= 3:
+            assert start_degree == 0
             return _loop(y, cheb, x_idx)
 
         y = jnp.arccos(y)
-        return _gather_reduce(y, cheb, x_idx)
+        return _gather_reduce(y, cheb, x_idx, start_degree)
 
     def intersect1d(self, k=0.0, eps=None, num_intersect=-1):
         """Coordinates z(x, yᵢ) such that fₓ(yᵢ) = k for every x.
