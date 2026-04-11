@@ -681,7 +681,7 @@ class PiecewiseChebyshevSeries(Module):
         y += self.domain[0]
         return x_idx, y
 
-    def eval1d(self, z, cheb=None, loop=False, start_degree=0):
+    def eval1d(self, z, cheb=None, loop=False):
         """Evaluate piecewise Chebyshev series at coordinates z.
 
         Parameters
@@ -702,9 +702,6 @@ class PiecewiseChebyshevSeries(Module):
             If ``False``, then gathers a large block of memory and computes
             a product sum reduction while checkpointing the derivative
             to reduce memory consumption of the Jacobian.
-        start_degree : int
-            Degree of the lowest order Chebyshev coefficient at ``cheb.shape[...,0]``.
-            Default is 0.
 
         Returns
         -------
@@ -718,11 +715,10 @@ class PiecewiseChebyshevSeries(Module):
         y = bijection_to_disc(y, *self.domain)
 
         if loop and self.Y >= 3:
-            assert start_degree == 0
             return _loop(y, cheb, x_idx)
 
         y = jnp.arccos(y)
-        return _gather_reduce(y, cheb, x_idx, start_degree)
+        return _gather_reduce(y, cheb, x_idx, 0)
 
     def intersect1d(self, k=0.0, eps=None, num_intersect=-1):
         """Coordinates z(x, yᵢ) such that fₓ(yᵢ) = k for every x.
