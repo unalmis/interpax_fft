@@ -135,6 +135,8 @@ def subtract_first(c, k):
     Semantically same as ``return c.at[...,0].subtract(k)``,
     but allows dimension to increase.
     """
+    if jnp.ndim(k) == 0:
+        return c.at[..., 0].subtract(k)
     c_0 = c[..., 0] - k
     return jnp.concatenate(
         [
@@ -151,6 +153,32 @@ def filter_distinct(r, sentinel, eps):
     # Otherwise, algorithms relying on continuity will fail.
     mask = jnp.isclose(jnp.diff(r, axis=-1, prepend=sentinel), 0, atol=eps)
     return jnp.where(mask, sentinel, r)
+
+
+# TODO: replace the inner loop in orthax with this
+def chebder(c, m=1, scl=1.0, axis=0, keepdims=False):
+    """Same as orthax.chebder but fast enough to use in optimization loop."""
+    assert m == 1
+    c = jnp.flip(c.swapaxes(axis, 0), 0)
+
+    N = c.shape[0]
+    n = jnp.arange(N - 1, -1, -1).reshape((N,) + (1,) * (c.ndim - 1))
+    w = (2 * scl) * n * c
+
+    dc = jnp.flip(
+        jnp.zeros(c.shape)
+        .at[1::2]
+        .set(jnp.cumsum(w[::2], 0)[: N // 2])
+        .at[2::2]
+        .set(jnp.cumsum(w[1::2], 0)[: (N - 1) // 2])
+        .at[-1]
+        .multiply(0.5),
+        0,
+    )
+    if not keepdims:
+        dc = dc[:-1]
+    dc = dc.swapaxes(axis, 0)
+    return dc
 
 
 class _Indexable:
