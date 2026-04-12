@@ -15,6 +15,7 @@ from numpy.polynomial.chebyshev import (
     chebpts2,
     chebroots,
     chebval,
+    chebder,
 )
 
 from interpax_fft import (
@@ -366,7 +367,7 @@ def test_fourier_chebyshev(func, X, Y):
     assert np.isfinite(series.harmonics()).all()
 
 
-def _cheb_intersect(cheb, k):
+def _intersect(cheb, k):
     cheb = cheb.copy()
     cheb[0] = cheb[0] - k
     roots = chebroots(cheb)
@@ -375,44 +376,55 @@ def _cheb_intersect(cheb, k):
 
 
 @pytest.mark.unit
-def test_z1_first_chebyshev():
+def test_intersect_chebyshev():
     """Test that intersectons are computed correctly."""
 
     def f(z):
-        return -2 * np.cos(1 / (0.1 + z**2)) + 2
+        return -2 * np.cos(1 / (0.1 + (z / 2) ** 2)) + 2
 
-    X, Y = 1, 10
-    alpha, zeta = FourierChebyshevSeries.nodes(X, Y).T
-    cheb = FourierChebyshevSeries(f(zeta).reshape(X, Y)).compute_cheb(fourier_pts(X))
-    cheb = PiecewiseChebyshevSeries(cheb)
+    X, Y = 1, 64
+    domain = (-2, 2)
+    alpha, zeta = FourierChebyshevSeries.nodes(X, Y, domain=domain).T
+    pcs = PiecewiseChebyshevSeries(
+        FourierChebyshevSeries(f(zeta).reshape(X, Y), domain).compute_cheb(
+            fourier_pts(X)
+        ),
+        domain,
+    )
+
     pitch_inv = jnp.array([2, 3])
-    z1, z2 = cheb.intersect1d(pitch_inv)
-    cheb.check_intersect1d(z1, z2, pitch_inv)
-
-    bench = chebinterpolate(f, Y - 1)
+    z1, z2 = pcs.intersect1d(pitch_inv)
+    pcs.check_intersect1d(z1, z2, pitch_inv)
+    bench = chebinterpolate(lambda z: f(2 * z), Y - 1)
     for i in range(pitch_inv.size):
         mask = z1[i] < z2[i]
         z1i, z2i = z1[i][mask], z2[i][mask]
-        r = _cheb_intersect(bench, pitch_inv[i])
-        np.testing.assert_allclose(z1i, r[1])
-        np.testing.assert_allclose(z2i, r[2])
+        r = 2 * _intersect(bench, pitch_inv[i])
+        np.testing.assert_allclose(z1i, (r[1], r[3]))
+        np.testing.assert_allclose(z2i, (r[2], r[4]))
+
+    extrema, vals = pcs.extrema1d(fill_value=np.nan)
+    vals = vals[np.isfinite(extrema)]
+    extrema = extrema[np.isfinite(extrema)]
+    np.testing.assert_allclose(extrema, 2 * _intersect(chebder(bench), 0), atol=1e-11)
+    np.testing.assert_allclose(vals, f(extrema), atol=1e-4, rtol=1e-4)
 
     z1 = flatten_mat(z1)
-    np.testing.assert_allclose(cheb.eval1d(z1, loop=False), cheb.eval1d(z1, loop=True))
+    np.testing.assert_allclose(pcs.eval1d(z1, loop=False), pcs.eval1d(z1, loop=True))
 
     # tested more rigorously in downstream libraries
     @jax.grad
     def fun(pitch_inv):
-        z1, z2 = cheb.intersect1d(pitch_inv)
+        z1, z2 = pcs.intersect1d(pitch_inv)
         return (z1 * z2).sum()
 
     out = fun(jnp.asarray(pitch_inv).astype(float))
     assert np.isfinite(out).all()
 
-    np.testing.assert_allclose(cheb.stitch(cheb.cheb), cheb.cheb)
+    np.testing.assert_allclose(pcs.stitch(pcs.cheb), pcs.cheb)
 
     with pytest.warns(UserWarning):
-        out = cheb.evaluate(cheb.Y - 1)
+        out = pcs.evaluate(pcs.Y - 1)
 
 
 @partial(jnp.vectorize, signature="(m)->()")

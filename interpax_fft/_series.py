@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from equinox import Module
-from jax.numpy.fft import irfft, rfft
+from jax.numpy.fft import rfft
 from jax.scipy.fft import dct, dctn, idct, idctn
 
 from ._fft import irfft_interp1d
@@ -24,6 +24,7 @@ from ._utils_private import (
     setdefault,
     subtract_first,
     warnif,
+    chebder,
 )
 from ._utils_public import (
     cheb_from_dct,
@@ -462,12 +463,14 @@ def _loop(y, cheb, x_idx):
 
 
 @partial(jax.custom_jvp, nondiff_argnums=(2,))
-def _intersect2d(o, k, eps):
+def _intersect2d(cheb, k, eps):
     """Coordinates yᵢ such that f(x, yᵢ) = k(x).
 
     Parameters
     ----------
-    o : PiecwiseChebyshevSeries
+    cheb : jnp.ndarray
+        Shape (..., Y).
+        Chebyshev coefficients.
     k : jnp.ndarray
         Shape must broadcast with (..., *cheb.shape[:-1]).
         Specify to find solutions yᵢ to f(x, yᵢ) = k(x). Default 0.
@@ -489,7 +492,7 @@ def _intersect2d(o, k, eps):
 
     """
     # roots yᵢ of f(x, y) = ∑ₙ₌₀ᴺ⁻¹ αₙ(x) Tₙ(y) - k(x)
-    y = _chebroots_vec(subtract_first(o.cheb, k))
+    y = _chebroots_vec(subtract_first(cheb, k))
 
     # Intersects must satisfy y ∈ [-1, 1].
     # Pick sentinel such that only distinct roots are considered intersects.
@@ -498,12 +501,12 @@ def _intersect2d(o, k, eps):
     # Ensure y ∈ (-1, 1), i.e. where arccos is differentiable.
     y = jnp.where(mask, y.real, 0.0)
 
-    n = jnp.arange(o.Y)
+    n = jnp.arange(cheb.shape[-1])
     # ∂f/∂y = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) n Uₙ₋₁(y)
     df_dy = jnp.einsum(
         "...yn, ...n",
         jnp.sin(n * jnp.arccos(y)[..., None]) / jnp.sqrt(1 - y**2)[..., None],
-        o.cheb * n,
+        cheb * n,
     )
     return y, mask, df_dy
 
@@ -528,15 +531,15 @@ def _intersect2d_jvp(eps, primals, tangents):
     Supplementary information.
 
     """
-    o, k = primals
-    do, dk = tangents
+    c, k = primals
+    dc, dk = tangents
 
-    y, mask, df_dy = _intersect2d(o, k, eps)
-    n = jnp.arange(o.Y)
-    df_do = jnp.einsum("...yn, ...n", jnp.cos(n * jnp.arccos(y)[..., None]), do.cheb)
+    y, mask, df_dy = _intersect2d(c, k, eps)
+    n = jnp.arange(c.shape[-1])
+    df_dc = jnp.einsum("...yn, ...n", jnp.cos(n * jnp.arccos(y)[..., None]), dc)
     dy = jnp.where(
         mask,
-        (jnp.expand_dims(dk, -1) - df_do)
+        (jnp.expand_dims(dk, -1) - df_dc)
         / jnp.where(
             jnp.abs(df_dy) > eps,
             df_dy,
@@ -720,7 +723,7 @@ class PiecewiseChebyshevSeries(Module):
         y = jnp.arccos(y)
         return _gather_reduce(y, cheb, x_idx, 0)
 
-    def intersect1d(self, k=0.0, eps=None, num_intersect=-1):
+    def intersect1d(self, k=0.0, eps=None, num_intersect=-1, fill_value=0.0):
         """Coordinates z(x, yᵢ) such that fₓ(yᵢ) = k for every x.
 
         Notes
@@ -743,7 +746,7 @@ class PiecewiseChebyshevSeries(Module):
 
             If not specified, then all intersects are returned. If there were fewer
             intersects detected than the size of the last axis of the returned arrays,
-            then that axis is padded with zero.
+            then that axis is padded with ``fill_value``.
 
         Returns
         -------
@@ -764,12 +767,12 @@ class PiecewiseChebyshevSeries(Module):
             eps = max(jnp.finfo(jnp.array(1.0).dtype).eps, 2.5e-12)
 
         # Add axis to use same k over all Chebyshev series of the piecewise series.
-        y, mask, df_dy = _intersect2d(self, jnp.atleast_1d(k)[..., None], eps=eps)
+        y, mask, df_dy = _intersect2d(self.cheb, jnp.atleast_1d(k)[..., None], eps)
         df_dy = jnp.sign(df_dy)
-        y = bijection_from_disc(y, *self.domain)
+        y = self._isomorphism_to_C1(bijection_from_disc(y, *self.domain))
 
         # Flatten so that last axis enumerates intersects along the piecewise series.
-        y = flatten_mat(self._isomorphism_to_C1(y))
+        y = flatten_mat(y)
         mask = flatten_mat(mask)
         df_dy = flatten_mat(df_dy)
 
@@ -783,9 +786,75 @@ class PiecewiseChebyshevSeries(Module):
         mask = (z1 > sentinel) & (z2 > sentinel)
         # Set to zero so integration is over set of measure zero
         # and basis functions are faster to evaluate in downstream routines.
-        z1 = jnp.where(mask, z1, 0.0)
-        z2 = jnp.where(mask, z2, 0.0)
+        z1 = jnp.where(mask, z1, fill_value)
+        z2 = jnp.where(mask, z2, fill_value)
         return z1, z2
+
+    def extrema1d(self, eps=None, sign=0, num_extrema=-1, fill_value=0.0):
+        """Coordinates and function value where derivative vanishes.
+
+        Notes
+        -----
+        It is recommended to pip install ``orthax`` to use this method.
+        If ``orthax`` is not installed, numpy will be used, which is
+        less performant.
+
+        Parameters
+        ----------
+        eps : float
+            Absolute tolerance with which to consider value as zero.
+            Default is near machine epsilon.
+        sign : int
+            Set to positive (negative) value to return only minima (maxima).
+        num_extrema : int or None
+            Specify to return the first ``num_extrema`` extrema.
+            This is useful if ``num_extrema`` tightly bounds the actual number.
+
+            If not specified, then all extrema are returned. If there were fewer
+            extrema detected than the size of the last axis of the returned arrays,
+            then that axis is padded with ``fill_value``.
+
+        Returns
+        -------
+        z, f(z) : jnp.ndarray
+            Shape broadcasts with (..., *self.cheb.shape[:-2], num extrema).
+            Extrema and function value at extrema.
+
+        """
+        errorif(
+            self.Y < 2,
+            NotImplementedError,
+            "This method requires a Chebyshev spectral resolution of Y > 1, "
+            f"but got Y = {self.Y}.",
+        )
+        if eps is None:
+            eps = max(jnp.finfo(jnp.array(1.0).dtype).eps, 2.5e-12)
+
+        y, mask, df_dy = _intersect2d(
+            chebder(self.cheb, scl=2 / (self.domain[-1] - self.domain[0]), axis=-1),
+            0.0,
+            eps,
+        )
+        if sign == 0:
+            del df_dy
+        else:
+            df_dy = jnp.sign(df_dy)
+            mask &= df_dy == jnp.sign(sign)
+        mask = flatten_mat(mask)
+
+        y = flatten_mat(
+            jnp.stack(
+                [
+                    self._isomorphism_to_C1(bijection_from_disc(y, *self.domain)),
+                    jnp.einsum(
+                        "...yn, ...n",
+                        jnp.cos(jnp.arange(self.Y) * jnp.arccos(y)[..., None]),
+                        self.cheb,
+                    ),
+                ]
+            )
+        )
+        return take_mask(y, mask, size=num_extrema, fill_value=fill_value)
 
     def _check_shape(self, z1, z2, k):
         """Return shapes that broadcast with (k.shape[0], *self.cheb.shape[:-2], W)."""
@@ -831,7 +900,7 @@ class PiecewiseChebyshevSeries(Module):
         plots = []
 
         z1, z2, k = self._check_shape(z1, z2, k)
-        mask = (z1 - z2) != 0.0
+        mask = z1 < z2
         z1 = jnp.where(mask, z1, jnp.nan)
         z2 = jnp.where(mask, z2, jnp.nan)
 
