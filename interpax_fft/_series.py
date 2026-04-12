@@ -790,7 +790,7 @@ class PiecewiseChebyshevSeries(Module):
         z2 = jnp.where(mask, z2, fill_value)
         return z1, z2
 
-    def extrema1d(self, eps=None, sign=0, num_extrema=-1, fill_value=0.0):
+    def extrema1d(self, sign=0, num_extrema=-1, fill_value=0.0, *, eps=None):
         """Coordinates and function value where derivative vanishes.
 
         Notes
@@ -801,9 +801,6 @@ class PiecewiseChebyshevSeries(Module):
 
         Parameters
         ----------
-        eps : float
-            Absolute tolerance with which to consider value as zero.
-            Default is near machine epsilon.
         sign : int
             Set to positive (negative) value to return only minima (maxima).
         num_extrema : int or None
@@ -813,6 +810,11 @@ class PiecewiseChebyshevSeries(Module):
             If not specified, then all extrema are returned. If there were fewer
             extrema detected than the size of the last axis of the returned arrays,
             then that axis is padded with ``fill_value``.
+        fill_value : float
+            Value with which to pad array.
+        eps : float
+            Absolute tolerance with which to consider value as zero.
+            Default is near machine epsilon.
 
         Returns
         -------
