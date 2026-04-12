@@ -380,29 +380,33 @@ def test_intersect_chebyshev():
     """Test that intersectons are computed correctly."""
 
     def f(z):
-        return -2 * np.cos(1 / (0.1 + z**2)) + 2
+        return -2 * np.cos(1 / (0.1 + (z / 2) ** 2)) + 2
 
     X, Y = 1, 64
-    alpha, zeta = FourierChebyshevSeries.nodes(X, Y).T
+    domain = (-2, 2)
+    alpha, zeta = FourierChebyshevSeries.nodes(X, Y, domain=domain).T
     pcs = PiecewiseChebyshevSeries(
-        FourierChebyshevSeries(f(zeta).reshape(X, Y)).compute_cheb(fourier_pts(X))
+        FourierChebyshevSeries(f(zeta).reshape(X, Y), domain).compute_cheb(
+            fourier_pts(X)
+        ),
+        domain,
     )
 
     pitch_inv = jnp.array([2, 3])
     z1, z2 = pcs.intersect1d(pitch_inv)
     pcs.check_intersect1d(z1, z2, pitch_inv)
-    bench = chebinterpolate(f, Y - 1)
+    bench = chebinterpolate(lambda z: f(2 * z), Y - 1)
     for i in range(pitch_inv.size):
         mask = z1[i] < z2[i]
         z1i, z2i = z1[i][mask], z2[i][mask]
-        r = _intersect(bench, pitch_inv[i])
+        r = 2 * _intersect(bench, pitch_inv[i])
         np.testing.assert_allclose(z1i, (r[1], r[3]))
         np.testing.assert_allclose(z2i, (r[2], r[4]))
 
     extrema, vals = pcs.extrema1d(fill_value=np.nan)
     vals = vals[np.isfinite(extrema)]
     extrema = extrema[np.isfinite(extrema)]
-    np.testing.assert_allclose(extrema, _intersect(chebder(bench), 0), atol=1e-11)
+    np.testing.assert_allclose(extrema, 2 * _intersect(chebder(bench), 0), atol=1e-11)
     np.testing.assert_allclose(vals, f(extrema), atol=1e-4, rtol=1e-4)
 
     z1 = flatten_mat(z1)
