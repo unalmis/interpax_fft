@@ -723,7 +723,7 @@ class PiecewiseChebyshevSeries(Module):
         y = jnp.arccos(y)
         return _gather_reduce(y, cheb, x_idx, 0)
 
-    def intersect1d(self, k=0.0, eps=None, num_intersect=-1, fill_value=0.0):
+    def intersect1d(self, k=0.0, num_intersect=-1, fill_value=0.0, *, eps=None):
         """Coordinates z(x, yᵢ) such that fₓ(yᵢ) = k for every x.
 
         Notes
@@ -737,9 +737,6 @@ class PiecewiseChebyshevSeries(Module):
         k : jnp.ndarray
             Shape must broadcast with (..., *cheb.shape[:-2]).
             Specify to find solutions yᵢ to fₓ(yᵢ) = k. Default 0.
-        eps : float
-            Absolute tolerance with which to consider value as zero.
-            Default is near machine epsilon.
         num_intersect : int or None
             Specify to return the first ``num_intersect`` intersects.
             This is useful if ``num_intersect`` tightly bounds the actual number.
@@ -750,6 +747,9 @@ class PiecewiseChebyshevSeries(Module):
         fill_value : float
             Value with which to pad array.
             Default is 0.
+        eps : float
+            Absolute tolerance with which to consider value as zero.
+            Default is near machine epsilon.
 
         Returns
         -------
