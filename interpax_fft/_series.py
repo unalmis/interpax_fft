@@ -747,6 +747,9 @@ class PiecewiseChebyshevSeries(Module):
             If not specified, then all intersects are returned. If there were fewer
             intersects detected than the size of the last axis of the returned arrays,
             then that axis is padded with ``fill_value``.
+        fill_value : float
+            Value with which to pad array.
+            Default is 0.
 
         Returns
         -------
@@ -812,6 +815,7 @@ class PiecewiseChebyshevSeries(Module):
             then that axis is padded with ``fill_value``.
         fill_value : float
             Value with which to pad array.
+            Default is 0.
         eps : float
             Absolute tolerance with which to consider value as zero.
             Default is near machine epsilon.
