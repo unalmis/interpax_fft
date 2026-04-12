@@ -842,11 +842,10 @@ class PiecewiseChebyshevSeries(Module):
             mask &= df_dy == jnp.sign(sign)
         mask = flatten_mat(mask)
 
-        y = self._isomorphism_to_C1(bijection_from_disc(y, *self.domain))
         y = flatten_mat(
             jnp.stack(
                 [
-                    y,
+                    self._isomorphism_to_C1(bijection_from_disc(y, *self.domain)),
                     jnp.einsum(
                         "...yn, ...n",
                         jnp.cos(jnp.arange(self.Y) * jnp.arccos(y)[..., None]),
