@@ -50,6 +50,7 @@ jobs:
             ./prof.db
       - name: Upload coverage
         id : codecov
+        if: github.actor != 'dependabot[bot]'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
