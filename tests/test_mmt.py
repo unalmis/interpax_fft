@@ -177,8 +177,8 @@ def test_non_uniform_real_MMT_2D(func, m, n, domain_x, domain_y):
     """Test non-uniform real MMT 2D interpolation."""
     x = np.linspace(domain_x[0], domain_x[1], m, endpoint=False)
     y = np.linspace(domain_y[0], domain_y[1], n, endpoint=False)
-    x, y = map(np.ravel, tuple(np.meshgrid(x, y, indexing="ij")))
-    c = func(x, y).reshape(m, n)
+    x, y = np.meshgrid(x, y, indexing="ij", sparse=True)
+    c = func(x, y)
     xq = np.array([7.34, 1.10134, 2.28, 1e3 * np.e])
     yq = np.array([1.1, 3.78432, 8.542, 0])
 
