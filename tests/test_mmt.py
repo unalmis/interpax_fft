@@ -177,8 +177,8 @@ def test_non_uniform_real_MMT_2D(func, m, n, domain_x, domain_y):
     """Test non-uniform real MMT 2D interpolation."""
     x = np.linspace(domain_x[0], domain_x[1], m, endpoint=False)
     y = np.linspace(domain_y[0], domain_y[1], n, endpoint=False)
-    x, y = map(np.ravel, tuple(np.meshgrid(x, y, indexing="ij")))
-    c = func(x, y).reshape(m, n)
+    x, y = np.meshgrid(x, y, indexing="ij", sparse=True)
+    c = func(x, y)
     xq = np.array([7.34, 1.10134, 2.28, 1e3 * np.e])
     yq = np.array([1.1, 3.78432, 8.542, 0])
 
@@ -329,8 +329,8 @@ def test_interp_dct(f, M):
 )
 def test_double_chebyshev(func, X, Y):
     """Tests for coverage of DoubleChebyshev series."""
-    _, x, y = DoubleChebyshevSeries.nodes(X, Y, L=1).T
-    f = func(x, y).reshape(X, Y)
+    x, y = DoubleChebyshevSeries.nodes(X, Y, sparse=True)
+    f = func(x, y)
     series = DoubleChebyshevSeries(f)
     if _DCT_BUG:
         with pytest.raises(ValueError):
@@ -353,8 +353,8 @@ def test_double_chebyshev(func, X, Y):
 )
 def test_fourier_chebyshev(func, X, Y):
     """Tests for coverage of FourierChebyshev series."""
-    x, y = FourierChebyshevSeries.nodes(X, Y).T
-    f = func(x, y).reshape(X, Y)
+    x, y = FourierChebyshevSeries.nodes(X, Y, sparse=True)
+    f = func(x, y)
     series = FourierChebyshevSeries(f)
     np.testing.assert_allclose(series.evaluate(X, Y), f)
 
@@ -384,11 +384,10 @@ def test_intersect_chebyshev():
 
     X, Y = 1, 64
     domain = (-2, 2)
-    alpha, zeta = FourierChebyshevSeries.nodes(X, Y, domain=domain).T
+    _, _, zeta = FourierChebyshevSeries.nodes(X, Y, L=1, domain=domain)
+    zeta = zeta.squeeze(0)
     pcs = PiecewiseChebyshevSeries(
-        FourierChebyshevSeries(f(zeta).reshape(X, Y), domain).compute_cheb(
-            fourier_pts(X)
-        ),
+        FourierChebyshevSeries(f(zeta), domain).compute_cheb(fourier_pts(X)),
         domain,
     )
 

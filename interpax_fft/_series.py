@@ -56,15 +56,14 @@ from packaging import version
 _DCT_BUG = version.parse(jax.__version__) <= version.parse("0.7.2")
 
 
-def _coords(x, y, L):
+def _coords(x, y, L, sparse=False):
     if L is None:
         coords = (x, y)
     else:
         if isposint(L):
             L = jnp.flipud(jnp.linspace(1, 0, L, endpoint=False))
         coords = (jnp.atleast_1d(L), x, y)
-    coords = tuple(map(jnp.ravel, jnp.meshgrid(*coords, indexing="ij")))
-    return jnp.column_stack(coords)
+    return jnp.meshgrid(*coords, indexing="ij", sparse=sparse)
 
 
 class DoubleChebyshevSeries(Module):
@@ -141,7 +140,9 @@ class DoubleChebyshevSeries(Module):
         )
 
     @staticmethod
-    def nodes(X, Y, L=None, domain_x=(-1, 1), domain_y=(-1, 1), lobatto=False):
+    def nodes(
+        X, Y, L=None, domain_x=(-1, 1), domain_y=(-1, 1), lobatto=False, sparse=False
+    ):
         """Tensor product grid of optimal collocation nodes for this basis.
 
         Parameters
@@ -161,16 +162,19 @@ class DoubleChebyshevSeries(Module):
         lobatto : bool
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
+        sparse : bool, optional
+            Whether to return sparse grid, see the same option in ``np.meshgrid``.
 
         Returns
         -------
-        coords : jnp.ndarray
-            Shape (X * Y, 2).
-            Grid of (x, y) points for optimal interpolation.
+        coords : tuple[jnp.ndarray]
+            Grid of points for optimal interpolation.
+            Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
 
         """
         return _coords(
-            cheb_pts(X, domain_x, lobatto), cheb_pts(Y, domain_y, lobatto), L
+            cheb_pts(X, domain_x, lobatto), cheb_pts(Y, domain_y, lobatto), L, sparse
         )
 
     def evaluate(self, X, Y):
@@ -295,7 +299,7 @@ class FourierChebyshevSeries(Module):
         )
 
     @staticmethod
-    def nodes(X, Y, L=None, domain=(-1, 1), lobatto=False):
+    def nodes(X, Y, L=None, domain=(-1, 1), lobatto=False, sparse=False):
         """Tensor product grid of optimal collocation nodes for this basis.
 
         Parameters
@@ -313,15 +317,18 @@ class FourierChebyshevSeries(Module):
         lobatto : bool
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
+        sparse : bool, optional
+            Whether to return sparse grid, see the same option in ``np.meshgrid``.
 
         Returns
         -------
-        coords : jnp.ndarray
-            Shape (X * Y, 2).
-            Grid of (x, y) points for optimal interpolation.
+        coords : tuple[jnp.ndarray]
+            Grid of points for optimal interpolation.
+            Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
 
         """
-        return _coords(fourier_pts(X), cheb_pts(Y, domain, lobatto), L)
+        return _coords(fourier_pts(X), cheb_pts(Y, domain, lobatto), L, sparse)
 
     def evaluate(self, X, Y):
         """Evaluate Fourier-Chebyshev series on tensor-product grid.
