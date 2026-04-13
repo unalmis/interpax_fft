@@ -329,8 +329,8 @@ def test_interp_dct(f, M):
 )
 def test_double_chebyshev(func, X, Y):
     """Tests for coverage of DoubleChebyshev series."""
-    _, x, y = DoubleChebyshevSeries.nodes(X, Y, L=1).T
-    f = func(x, y).reshape(X, Y)
+    x, y = DoubleChebyshevSeries.nodes(X, Y, sparse=True)
+    f = func(x, y)
     series = DoubleChebyshevSeries(f)
     if _DCT_BUG:
         with pytest.raises(ValueError):
@@ -353,8 +353,8 @@ def test_double_chebyshev(func, X, Y):
 )
 def test_fourier_chebyshev(func, X, Y):
     """Tests for coverage of FourierChebyshev series."""
-    x, y = FourierChebyshevSeries.nodes(X, Y).T
-    f = func(x, y).reshape(X, Y)
+    x, y = FourierChebyshevSeries.nodes(X, Y, sparse=True)
+    f = func(x, y)
     series = FourierChebyshevSeries(f)
     np.testing.assert_allclose(series.evaluate(X, Y), f)
 
@@ -384,11 +384,10 @@ def test_intersect_chebyshev():
 
     X, Y = 1, 64
     domain = (-2, 2)
-    alpha, zeta = FourierChebyshevSeries.nodes(X, Y, domain=domain).T
+    _, _, zeta = FourierChebyshevSeries.nodes(X, Y, L=1, domain=domain)
+    zeta = zeta.squeeze(0)
     pcs = PiecewiseChebyshevSeries(
-        FourierChebyshevSeries(f(zeta).reshape(X, Y), domain).compute_cheb(
-            fourier_pts(X)
-        ),
+        FourierChebyshevSeries(f(zeta), domain).compute_cheb(fourier_pts(X)),
         domain,
     )
 
