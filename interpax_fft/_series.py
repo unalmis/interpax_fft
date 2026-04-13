@@ -153,8 +153,7 @@ class DoubleChebyshevSeries(Module):
             Grid resolution in y direction. Preferably power of 2.
         L : int or jnp.ndarray
             Optional, resolution in radial direction of domain [0, 1].
-            May also be an array of coordinates values. If given, then the
-            returned ``coords`` is a 3D tensor-product with shape (L * X * Y, 3).
+            May also be an array of coordinates values.
         domain_x : tuple[float]
             Domain for x coordinates. Default is [-1, 1].
         domain_y : tuple[float]
@@ -310,8 +309,7 @@ class FourierChebyshevSeries(Module):
             Grid resolution in y direction. Preferably power of 2.
         L : int or jnp.ndarray
             Optional, resolution in radial direction of domain [0, 1].
-            May also be an array of coordinates values. If given, then the
-            returned ``coords`` is a 3D tensor-product with shape (L * X * Y, 3).
+            May also be an array of coordinates values.
         domain : tuple[float]
             Domain for y coordinates. Default is [-1, 1].
         lobatto : bool
