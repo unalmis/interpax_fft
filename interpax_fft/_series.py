@@ -101,20 +101,19 @@ class DoubleChebyshevSeries(Module):
         to noise ratio is lowest. The default value is zero which is interpreted as
         no truncation.
 
-    Attributes
-    ----------
-    X : int
-        Chebyshev spectral resolution in x coordinate.
-    Y : int
-        Chebyshev spectral resolution in y coordinate.
-
     """
 
     X: int
+    """Chebyshev spectral resolution in x coordinate."""
     Y: int
+    """Chebyshev spectral resolution in y coordinate."""
     domain_x: tuple[float]
+    """Domain for x coordinates."""
     domain_y: tuple[float]
+    """Domain for y coordinates."""
     lobatto: bool
+    """Whether the Lobatto grid is used."""
+
     _c: jax.Array
 
     def __init__(
@@ -251,7 +250,6 @@ class FourierChebyshevSeries(Module):
     -----
     Performance may improve if ``X`` and ``Y`` are powers of two.
 
-
     Parameters
     ----------
     f : jnp.ndarray
@@ -268,19 +266,17 @@ class FourierChebyshevSeries(Module):
         to noise ratio is lowest. The default value is zero which is interpreted as
         no truncation.
 
-    Attributes
-    ----------
-    X : int
-        Fourier spectral resolution.
-    Y : int
-        Chebyshev spectral resolution.
-
     """
 
     X: int
+    """Fourier spectral resolution in x coordinate."""
     Y: int
+    """Chebyshev spectral resolution in y coordinate."""
     domain: tuple[float]
+    """Domain for y coordinates."""
     lobatto: bool
+    """Whether the Lobatto grid is used for y coordinate."""
+
     _c: jax.Array
 
     def __init__(self, f, domain=(-1, 1), lobatto=False, truncate=0):
@@ -501,12 +497,10 @@ def _intersect2d(cheb, k, eps):
     # Ensure y ∈ (-1, 1), i.e. where arccos is differentiable.
     y = jnp.where(mask, y.real, 0.0)
 
-    n = jnp.arange(cheb.shape[-1])
-    # ∂f/∂y = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) n Uₙ₋₁(y)
     df_dy = jnp.einsum(
         "...yn, ...n",
-        jnp.sin(n * jnp.arccos(y)[..., None]) / jnp.sqrt(1 - y**2)[..., None],
-        cheb * n,
+        jnp.cos(jnp.arange(cheb.shape[-1] - 1) * jnp.arccos(y)[..., None]),
+        chebder(cheb, axis=-1),
     )
     return y, mask, df_dy
 
@@ -523,20 +517,16 @@ def _intersect2d_jvp(eps, primals, tangents):
     here also diagonalizes the jvp with respect to k, so it is more effecient
     by a factor of the size of k.
 
-    References
-    ----------
-    Spectrally accurate, reverse-mode differentiable bounce-averaging
-    algorithm and its applications.
-    Kaya E. Unalmis et al.
-    Supplementary information.
-
     """
     c, k = primals
     dc, dk = tangents
 
     y, mask, df_dy = _intersect2d(c, k, eps)
-    n = jnp.arange(c.shape[-1])
-    df_dc = jnp.einsum("...yn, ...n", jnp.cos(n * jnp.arccos(y)[..., None]), dc)
+    df_dc = jnp.einsum(
+        "...yn, ...n",
+        jnp.cos(jnp.arange(c.shape[-1]) * jnp.arccos(y)[..., None]),
+        dc,
+    )
     dy = jnp.where(
         mask,
         (jnp.expand_dims(dk, -1) - df_dc)
@@ -573,7 +563,9 @@ class PiecewiseChebyshevSeries(Module):
     """
 
     cheb: jax.Array
+    """Chebyshev coefficients."""
     domain: tuple[float]
+    """Domain for y coordinates."""
 
     def __init__(self, cheb, domain=(-1, 1)):
         """Make piecewise series from given Chebyshev coefficients."""
@@ -583,17 +575,23 @@ class PiecewiseChebyshevSeries(Module):
 
     @property
     def X(self):
-        """Number of cuts."""
+        """Number of distinct series that compose the piecewise function."""
         return self.cheb.shape[-2]
 
     @property
     def Y(self):
-        """Chebyshev spectral resolution."""
+        """Chebyshev spectral resolution of each series."""
         return self.cheb.shape[-1]
 
     @staticmethod
     def stitch(cheb):
         """Enforce continuity of the piecewise series.
+
+        Parameters
+        ----------
+        cheb : jnp.ndarray
+            Shape (..., X, Y).
+            Chebyshev coefficients aₙ(x) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) Tₙ(y).
 
         In some applications, the given piecewise series
         may not be continuous to machine precision due to incomplete convergence
@@ -601,6 +599,12 @@ class PiecewiseChebyshevSeries(Module):
         In that case, this method is useful to enforce continuity exactly
         in the discrete system by adjusting the series in the next partition
         to start where the previous series ends.
+
+        Returns
+        -------
+        cheb : jnp.ndarray
+            Shape (..., X, Y).
+            Chebyshev coefficients aₙ(x) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) Tₙ(y).
 
         """
         cheb = jnp.atleast_2d(cheb)
@@ -729,8 +733,7 @@ class PiecewiseChebyshevSeries(Module):
         Notes
         -----
         It is recommended to pip install ``orthax`` to use this method.
-        If ``orthax`` is not installed, numpy will be used, which is
-        less performant.
+        If ``orthax`` is not installed, numpy will be used, which is less performant.
 
         Parameters
         ----------
@@ -799,8 +802,7 @@ class PiecewiseChebyshevSeries(Module):
         Notes
         -----
         It is recommended to pip install ``orthax`` to use this method.
-        If ``orthax`` is not installed, numpy will be used, which is
-        less performant.
+        If ``orthax`` is not installed, numpy will be used, which is less performant.
 
         Parameters
         ----------
