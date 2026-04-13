@@ -587,18 +587,18 @@ class PiecewiseChebyshevSeries(Module):
     def stitch(cheb):
         """Enforce continuity of the piecewise series.
 
-        Parameters
-        ----------
-        cheb : jnp.ndarray
-            Shape (..., X, Y).
-            Chebyshev coefficients aₙ(x) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) Tₙ(y).
-
         In some applications, the given piecewise series
         may not be continuous to machine precision due to incomplete convergence
         of some input.
         In that case, this method is useful to enforce continuity exactly
         in the discrete system by adjusting the series in the next partition
         to start where the previous series ends.
+
+        Parameters
+        ----------
+        cheb : jnp.ndarray
+            Shape (..., X, Y).
+            Chebyshev coefficients aₙ(x) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ aₙ(x) Tₙ(y).
 
         Returns
         -------
