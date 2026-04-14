@@ -428,7 +428,7 @@ def _gather_reduce(y, cheb, x_idx, start_degree):
     exceeds the cost of flops. By checkpointing, we avoid that in favor of
     recomputing derivatives in the backward pass.
 
-    On JAX version 0.7.2, enabling CSE did not increase memory.
+    Enabling CSE did not increase memory.
     """
     return _bigein(
         y,
@@ -446,8 +446,8 @@ def _loop(y, cheb, x_idx):
     memory than non-checkpointed _gather_reduce.
 
     JAX/XLA is poor at differentiating iterative algorithms compared to Julia.
-    On JAX version 0.7.2, this is slower to differentiate than _gather_reduce.
-    On JAX version 0.7.2, enabling CSE did not increase memory.
+    This is slower to differentiate than _gather_reduce.
+    Enabling CSE did not increase memory.
     """
 
     def body(i, val):
@@ -542,11 +542,11 @@ def _intersect2d_jvp(eps, primals, tangents):
         ),
         0.0,
     )
+    # We call df_dy = sign(df_dy) on output, so we skip computing its derivatives.
+    df_dy = jax.lax.stop_gradient(df_dy)
     return (y, mask, df_dy), (
         dy,
         jnp.zeros_like(mask, dtype=jax.dtypes.float0),
-        # we will always call df_dy = sign(df_dy) on output,
-        # so we can skip the computation of this hessian.
         jnp.zeros_like(df_dy),
     )
 
@@ -789,6 +789,7 @@ class PiecewiseChebyshevSeries(Module):
 
         z1 = (df_dy <= 0) & mask
         z2 = (df_dy >= 0) & epigraph_and(mask, df_dy)
+        del df_dy
 
         sentinel = self.domain[0] - 1.0
         z1 = take_mask(y, z1, size=num_intersect, fill_value=sentinel)
@@ -830,8 +831,8 @@ class PiecewiseChebyshevSeries(Module):
         Returns
         -------
         z, f(z) : jnp.ndarray
-            Shape broadcasts with (..., *self.cheb.shape[:-2], num extrema).
-            Extrema and function value at extrema.
+            Shape is (2, *self.cheb.shape[:-2], num extrema).
+            May be tuple unpacked into extrema and function value at extrema.
 
         """
         errorif(
@@ -848,11 +849,10 @@ class PiecewiseChebyshevSeries(Module):
             0.0,
             eps,
         )
-        if sign == 0:
-            del df_dy
-        else:
+        if sign != 0:
             df_dy = jnp.sign(df_dy)
             mask &= df_dy == jnp.sign(sign)
+        del df_dy
         mask = flatten_mat(mask)
 
         y = flatten_mat(
