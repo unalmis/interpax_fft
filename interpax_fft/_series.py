@@ -491,7 +491,7 @@ def _intersect2d(cheb, k, eps):
         Boolean array into ``y`` indicating whether element is an intersect.
     df_dy : jnp.ndarray
         Shape y.shape.
-        ∂f/∂y (x, yᵢ).
+        ∂f/∂y (x, yᵢ) with stopped gradients.
 
     """
     # roots yᵢ of f(x, y) = ∑ₙ₌₀ᴺ⁻¹ αₙ(x) Tₙ(y) - k(x)
