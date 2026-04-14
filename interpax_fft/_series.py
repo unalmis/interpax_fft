@@ -162,14 +162,15 @@ class DoubleChebyshevSeries(Module):
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
         sparse : bool, optional
-            Whether to return sparse grid, see the same option in ``np.meshgrid``.
+            Whether to return sparse grid, see the same option in ``numpy.meshgrid``.
 
         Returns
         -------
         coords : tuple[jnp.ndarray]
-            Grid of points for optimal interpolation.
+            Grid of x and y points for optimal interpolation.
             Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
-            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned,
+            denoting the grid of l, x, and y points, respectively.
 
         """
         return _coords(
@@ -316,14 +317,15 @@ class FourierChebyshevSeries(Module):
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
         sparse : bool, optional
-            Whether to return sparse grid, see the same option in ``np.meshgrid``.
+            Whether to return sparse grid, see the same option in ``numpy.meshgrid``.
 
         Returns
         -------
         coords : tuple[jnp.ndarray]
-            Grid of points for optimal interpolation.
+            Grid of x and y points for optimal interpolation.
             Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
-            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned,
+            denoting the grid of l, x, and y points, respectively.
 
         """
         return _coords(fourier_pts(X), cheb_pts(Y, domain, lobatto), L, sparse)
