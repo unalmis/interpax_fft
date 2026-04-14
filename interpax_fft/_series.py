@@ -484,8 +484,7 @@ def _intersect2d(cheb, k, eps):
     -------
     y : jnp.ndarray
         Shape (..., *cheb.shape[:-1], Y - 1).
-        Solutions yᵢ of f(x, yᵢ) = k(x), in ascending order,
-        are given by ``bijection_from_disc(y,*o.domain)``.
+        Solutions yᵢ of f(x, yᵢ) = k(x), in ascending order.
     mask : jnp.ndarray
         Shape y.shape.
         Boolean array into ``y`` indicating whether element is an intersect.
