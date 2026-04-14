@@ -233,7 +233,7 @@ class DoubleChebyshevSeries(Module):
             Chebyshev coefficients αₙ(x=``x``) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ αₙ(x) Tₙ(y).
 
         """
-        x = bijection_to_disc(x, self.domain_x[0], self.domain_x[-1])
+        x = bijection_to_disc(x, *self.domain_x)
         # Add axis to broadcast against Chebyshev series in y.
         x = jnp.atleast_1d(x)[..., None]
         cheb = cheb_from_dct(cheb_from_dct(self._c, -2), -1)
