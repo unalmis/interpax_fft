@@ -162,14 +162,15 @@ class DoubleChebyshevSeries(Module):
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
         sparse : bool, optional
-            Whether to return sparse grid, see the same option in ``np.meshgrid``.
+            Whether to return sparse grid, see the same option in ``numpy.meshgrid``.
 
         Returns
         -------
         coords : tuple[jnp.ndarray]
-            Grid of points for optimal interpolation.
+            Grid of x and y points for optimal interpolation.
             Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
-            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned,
+            denoting the grid of l, x, and y points, respectively.
 
         """
         return _coords(
@@ -232,7 +233,7 @@ class DoubleChebyshevSeries(Module):
             Chebyshev coefficients αₙ(x=``x``) for f(x, y) = ∑ₙ₌₀ᴺ⁻¹ αₙ(x) Tₙ(y).
 
         """
-        x = bijection_to_disc(x, self.domain_x[0], self.domain_x[-1])
+        x = bijection_to_disc(x, *self.domain_x)
         # Add axis to broadcast against Chebyshev series in y.
         x = jnp.atleast_1d(x)[..., None]
         cheb = cheb_from_dct(cheb_from_dct(self._c, -2), -1)
@@ -316,14 +317,15 @@ class FourierChebyshevSeries(Module):
             Whether to use the Gauss-Lobatto (Extrema-plus-Endpoint)
             instead of the interior roots grid for Chebyshev points.
         sparse : bool, optional
-            Whether to return sparse grid, see the same option in ``np.meshgrid``.
+            Whether to return sparse grid, see the same option in ``numpy.meshgrid``.
 
         Returns
         -------
         coords : tuple[jnp.ndarray]
-            Grid of points for optimal interpolation.
+            Grid of x and y points for optimal interpolation.
             Returns tuple of size 2 of arrays of shape (X, Y), unless ``L`` is given,
-            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned.
+            in which case a tuple of size 3 of arrays of shape (L, X, Y) is returned,
+            denoting the grid of l, x, and y points, respectively.
 
         """
         return _coords(fourier_pts(X), cheb_pts(Y, domain, lobatto), L, sparse)
@@ -428,7 +430,7 @@ def _gather_reduce(y, cheb, x_idx, start_degree):
     exceeds the cost of flops. By checkpointing, we avoid that in favor of
     recomputing derivatives in the backward pass.
 
-    On JAX version 0.7.2, enabling CSE did not increase memory.
+    Enabling CSE did not increase memory.
     """
     return _bigein(
         y,
@@ -446,8 +448,8 @@ def _loop(y, cheb, x_idx):
     memory than non-checkpointed _gather_reduce.
 
     JAX/XLA is poor at differentiating iterative algorithms compared to Julia.
-    On JAX version 0.7.2, this is slower to differentiate than _gather_reduce.
-    On JAX version 0.7.2, enabling CSE did not increase memory.
+    This is slower to differentiate than _gather_reduce.
+    Enabling CSE did not increase memory.
     """
 
     def body(i, val):
@@ -482,14 +484,13 @@ def _intersect2d(cheb, k, eps):
     -------
     y : jnp.ndarray
         Shape (..., *cheb.shape[:-1], Y - 1).
-        Solutions yᵢ of f(x, yᵢ) = k(x), in ascending order,
-        are given by ``bijection_from_disc(y,*o.domain)``.
+        Solutions yᵢ of f(x, yᵢ) = k(x), in ascending order.
     mask : jnp.ndarray
         Shape y.shape.
         Boolean array into ``y`` indicating whether element is an intersect.
     df_dy : jnp.ndarray
         Shape y.shape.
-        ∂f/∂y (x, yᵢ).
+        ∂f/∂y (x, yᵢ) with stopped gradients.
 
     """
     # roots yᵢ of f(x, y) = ∑ₙ₌₀ᴺ⁻¹ αₙ(x) Tₙ(y) - k(x)
@@ -542,11 +543,11 @@ def _intersect2d_jvp(eps, primals, tangents):
         ),
         0.0,
     )
+    # We call df_dy = sign(df_dy) on output, so we skip computing its derivatives.
+    df_dy = jax.lax.stop_gradient(df_dy)
     return (y, mask, df_dy), (
         dy,
         jnp.zeros_like(mask, dtype=jax.dtypes.float0),
-        # we will always call df_dy = sign(df_dy) on output,
-        # so we can skip the computation of this hessian.
         jnp.zeros_like(df_dy),
     )
 
@@ -789,10 +790,12 @@ class PiecewiseChebyshevSeries(Module):
 
         z1 = (df_dy <= 0) & mask
         z2 = (df_dy >= 0) & epigraph_and(mask, df_dy)
+        del df_dy
 
         sentinel = self.domain[0] - 1.0
         z1 = take_mask(y, z1, size=num_intersect, fill_value=sentinel)
         z2 = take_mask(y, z2, size=num_intersect, fill_value=sentinel)
+        del y
 
         mask = (z1 > sentinel) & (z2 > sentinel)
         # Set to zero so integration is over set of measure zero
@@ -830,8 +833,8 @@ class PiecewiseChebyshevSeries(Module):
         Returns
         -------
         z, f(z) : jnp.ndarray
-            Shape broadcasts with (..., *self.cheb.shape[:-2], num extrema).
-            Extrema and function value at extrema.
+            Shape is (2, *self.cheb.shape[:-2], num extrema).
+            May be tuple unpacked into extrema and function value at extrema.
 
         """
         errorif(
@@ -848,11 +851,10 @@ class PiecewiseChebyshevSeries(Module):
             0.0,
             eps,
         )
-        if sign == 0:
-            del df_dy
-        else:
+        if sign != 0:
             df_dy = jnp.sign(df_dy)
             mask &= df_dy == jnp.sign(sign)
+        del df_dy
         mask = flatten_mat(mask)
 
         y = flatten_mat(

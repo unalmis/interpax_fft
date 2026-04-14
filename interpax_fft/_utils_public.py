@@ -112,8 +112,7 @@ def epigraph_and(points, df_dy, /):
     """
     # The following comments are in regards to the article:
     # Spectrally accurate, reverse-mode differentiable bounce-averaging
-    # algorithm and its applications.
-    # Kaya E. Unalmis et al.
+    # algorithm and its applications. Kaya Unalmis et al. Journal of Plasma Physics.
 
     # The pairs y1 and y2 are boundaries of an integral only if y1 <= y2. For the
     # to be over wells, it is required that the first intersect has a non-positive
