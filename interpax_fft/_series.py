@@ -795,6 +795,7 @@ class PiecewiseChebyshevSeries(Module):
         sentinel = self.domain[0] - 1.0
         z1 = take_mask(y, z1, size=num_intersect, fill_value=sentinel)
         z2 = take_mask(y, z2, size=num_intersect, fill_value=sentinel)
+        del y
 
         mask = (z1 > sentinel) & (z2 > sentinel)
         # Set to zero so integration is over set of measure zero
