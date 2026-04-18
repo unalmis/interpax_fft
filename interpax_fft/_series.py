@@ -17,6 +17,7 @@ from ._utils_private import (
     atleast_nd,
     bijection_from_disc,
     bijection_to_disc,
+    chebder,
     errorif,
     filter_distinct,
     flatten_mat,
@@ -24,7 +25,6 @@ from ._utils_private import (
     setdefault,
     subtract_first,
     warnif,
-    chebder,
 )
 from ._utils_public import (
     cheb_from_dct,
@@ -406,51 +406,17 @@ class FourierChebyshevSeries(Module):
         return rfft_to_trig(cheb_from_dct(self._c), self.X, axis=-2)
 
 
-@jax.custom_jvp
-def _bigein(y, k, c):
-    return jnp.einsum("...m, ...m", jnp.cos(k * y[..., None]), c)
-
-
-@_bigein.defjvp
-def _bigein_jvp(primals, tangents):
-    # This allows AD to bypass storing the JVP of the vander tensor.
-    # Benchmarked to improve memory and speed significantly.
-    y, k, c = primals
-    dy, _, dc = tangents
-    df_dy = jnp.einsum("...m, ...m", -k * jnp.sin(k * y[..., None]), c)
-    return _bigein(y, k, c), _bigein(y, k, dc) + dy * df_dy
-
-
-@partial(jax.checkpoint, prevent_cse=False, static_argnums=(3,))
 def _gather_reduce(y, cheb, x_idx, start_degree):
-    """Gather then reduce with checkpointing.
-
-    Checkpointing this makes it faster and reduces memory.
-    On many architectures, the cost of allocating contiguous blocks of memory
-    exceeds the cost of flops. By checkpointing, we avoid that in favor of
-    recomputing derivatives in the backward pass.
-
-    Enabling CSE did not increase memory.
-    """
-    return _bigein(
-        y,
-        jnp.arange(start_degree, start_degree + cheb.shape[-1]),
+    k = jnp.arange(start_degree, start_degree + cheb.shape[-1])
+    return jnp.einsum(
+        "...m, ...m",
+        jnp.cos(k * y[..., None]),
         jnp.take_along_axis(cheb, x_idx[..., None], axis=-2),
     )
 
 
-@partial(jax.checkpoint, prevent_cse=False)
 def _loop(y, cheb, x_idx):
-    """Memory efficient Clenshaw recursion.
-
-    Checkpointing on a CPU observed a minor reduction in memory usage while not
-    affecting speed. With/without checkpointing, this uses signficantly less
-    memory than non-checkpointed _gather_reduce.
-
-    JAX/XLA is poor at differentiating iterative algorithms compared to Julia.
-    This is slower to differentiate than _gather_reduce.
-    Enabling CSE did not increase memory.
-    """
+    """Memory efficient Clenshaw recursion."""
 
     def body(i, val):
         c0, c1 = val
