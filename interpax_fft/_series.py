@@ -678,9 +678,6 @@ class PiecewiseChebyshevSeries(Module):
             Chebyshev coefficients to use. If not given, uses ``self.cheb``.
         loop : bool
             If ``True``, then uses Clenshaw recursion which is memory efficient.
-            If ``False``, then gathers a large block of memory and computes
-            a product sum reduction while checkpointing the derivative
-            to reduce memory consumption of the Jacobian.
 
         Returns
         -------
