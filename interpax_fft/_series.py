@@ -816,11 +816,9 @@ class PiecewiseChebyshevSeries(Module):
         if sign != 0:
             df_dy = jnp.sign(df_dy)
             mask &= df_dy == jnp.sign(sign)
-            counts = self.X * (self.Y // 2)
-            if num_extrema is None or num_extrema < 0:
-                num_extrema = counts
-            else:
-                num_extrema = min(num_extrema, counts)
+            count = self.X * (self.Y // 2)
+            cond = (num_extrema is None) or (num_extrema < 0)
+            num_extrema = count if cond else min(num_extrema, count)
         del df_dy
         mask = flatten_mat(mask)
 
