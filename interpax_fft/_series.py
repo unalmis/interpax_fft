@@ -410,7 +410,7 @@ def _gather_reduce(y, cheb, x_idx, start_degree):
     k = jnp.arange(start_degree, start_degree + cheb.shape[-1])
     return jnp.einsum(
         "...m, ...m",
-        jnp.cos(k * y[..., None]),
+        jnp.cos(k * jnp.arccos(y)[..., None]),
         jnp.take_along_axis(cheb, x_idx[..., None], axis=-2),
     )
 
@@ -685,15 +685,13 @@ class PiecewiseChebyshevSeries(Module):
             Chebyshev series evaluated at z.
 
         """
-        if cheb is None:
-            cheb = self.cheb
         x_idx, y = self._isomorphism_to_C2(z)
         y = bijection_to_disc(y, *self.domain)
 
+        if cheb is None:
+            cheb = self.cheb
         if loop and self.Y >= 3:
             return _loop(y, cheb, x_idx)
-
-        y = jnp.arccos(y)
         return _gather_reduce(y, cheb, x_idx, 0)
 
     def intersect1d(self, k=0.0, num_intersect=-1, fill_value=0.0, *, eps=None):
@@ -779,13 +777,14 @@ class PiecewiseChebyshevSeries(Module):
         ----------
         sign : int
             Set to positive (negative) value to return only minima (maxima).
-        num_extrema : int or None
-            Specify to return the first ``num_extrema`` extrema.
-            This is useful if ``num_extrema`` tightly bounds the actual number.
+        num_extrema : int
+            Specify to return the first ``num_extrema`` extrema which satisfy the
+            sign condition. This is useful if ``num_extrema`` tightly bounds the
+            actual number.
 
-            If not specified, then all extrema are returned. If there were fewer
-            extrema detected than the size of the last axis of the returned arrays,
-            then that axis is padded with ``fill_value``.
+            If not specified, then all extrema which satisfy the sign condition are
+            returned. If there were fewer extrema detected than the size of the last
+            axis of the returned arrays, then that axis is padded with ``fill_value``.
         fill_value : float
             Value with which to pad array.
             Default is 0.
@@ -817,6 +816,9 @@ class PiecewiseChebyshevSeries(Module):
         if sign != 0:
             df_dy = jnp.sign(df_dy)
             mask &= df_dy == jnp.sign(sign)
+            bound = self.X * (self.Y // 2)
+            cond = (num_extrema is None) or (num_extrema < 0)
+            num_extrema = bound if cond else min(num_extrema, bound)
         del df_dy
         mask = flatten_mat(mask)
 
