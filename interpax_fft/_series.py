@@ -5,7 +5,7 @@ from functools import partial
 import jax
 import jax.numpy as jnp
 import numpy as np
-from equinox import Module
+import equinox as eqx
 from jax.numpy.fft import rfft
 from jax.scipy.fft import dct, dctn, idct, idctn
 
@@ -66,7 +66,7 @@ def _coords(x, y, L, sparse=False):
     return jnp.meshgrid(*coords, indexing="ij", sparse=sparse)
 
 
-class DoubleChebyshevSeries(Module):
+class DoubleChebyshevSeries(eqx.Module):
     """Real-valued 2D Chebyshev series.
 
     f(x, y) = ∑ₘₙ aₘₙ Tₘ(x) Tₙ(y)
@@ -102,13 +102,15 @@ class DoubleChebyshevSeries(Module):
 
     """
 
+    # mark tuple[float] fields static so compiler can optimize out identity ops
+
     X: int
     """Chebyshev spectral resolution in x coordinate."""
     Y: int
     """Chebyshev spectral resolution in y coordinate."""
-    domain_x: tuple[float]
+    domain_x: tuple[float] = eqx.field(static=True)
     """Domain for x coordinates."""
-    domain_y: tuple[float]
+    domain_y: tuple[float] = eqx.field(static=True)
     """Domain for y coordinates."""
     lobatto: bool
     """Whether the Lobatto grid is used."""
@@ -243,7 +245,7 @@ class DoubleChebyshevSeries(Module):
         return cheb
 
 
-class FourierChebyshevSeries(Module):
+class FourierChebyshevSeries(eqx.Module):
     """Real-valued Fourier-Chebyshev series.
 
     f(x, y) = ∑ₘₙ aₘₙ ψₘ(x) Tₙ(y)
@@ -276,7 +278,7 @@ class FourierChebyshevSeries(Module):
     """Fourier spectral resolution in x coordinate."""
     Y: int
     """Chebyshev spectral resolution in y coordinate."""
-    domain: tuple[float]
+    domain: tuple[float] = eqx.field(static=True)
     """Domain for y coordinates."""
     lobatto: bool
     """Whether the Lobatto grid is used for y coordinate."""
@@ -518,7 +520,7 @@ def _intersect2d_jvp(eps, primals, tangents):
     )
 
 
-class PiecewiseChebyshevSeries(Module):
+class PiecewiseChebyshevSeries(eqx.Module):
     """Chebyshev series.
 
     { fₓ | fₓ : y ↦ ∑ₙ₌₀ᴺ⁻¹ aₙ(x) Tₙ(y) }
@@ -536,7 +538,7 @@ class PiecewiseChebyshevSeries(Module):
 
     cheb: jax.Array
     """Chebyshev coefficients."""
-    domain: tuple[float]
+    domain: tuple[float] = eqx.field(static=True)
     """Domain for y coordinates."""
 
     def __init__(self, cheb, domain=(-1, 1)):
