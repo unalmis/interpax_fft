@@ -233,11 +233,7 @@ def irfft2_mmt_pos(
     vf, vr = rfft2_modes(n[f], n[r], d[f], d[r])
     vf = jnp.exp(1j * vf * (x[f] - d[f][0])[..., None])
     vr = jnp.exp(1j * vr * (x[r] - d[r][0])[..., None])
-
-    if n[f] > n[r]:
-        return jnp.einsum("...r, ...r", vr, jnp.einsum("...f, ...fr", vf, a)).real
-    else:
-        return jnp.einsum("...f, ...f", vf, jnp.einsum("...r, ...fr", vr, a)).real
+    return jnp.einsum("...f, ...r, ...fr", vf, vr, a, optimize=True).real
 
 
 def rfft2_vander(
