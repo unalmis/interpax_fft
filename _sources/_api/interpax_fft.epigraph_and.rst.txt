@@ -1,0 +1,6 @@
+﻿interpax\_fft.epigraph\_and
+===========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: epigraph_and

@@ -1,0 +1,38 @@
+﻿interpax\_fft.PiecewiseChebyshevSeries
+======================================
+
+.. currentmodule:: interpax_fft
+
+.. autoclass:: PiecewiseChebyshevSeries
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PiecewiseChebyshevSeries.__init__
+      ~PiecewiseChebyshevSeries.check_intersect1d
+      ~PiecewiseChebyshevSeries.eval1d
+      ~PiecewiseChebyshevSeries.evaluate
+      ~PiecewiseChebyshevSeries.extrema1d
+      ~PiecewiseChebyshevSeries.intersect1d
+      ~PiecewiseChebyshevSeries.plot1d
+      ~PiecewiseChebyshevSeries.stitch
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PiecewiseChebyshevSeries.X
+      ~PiecewiseChebyshevSeries.Y
+      ~PiecewiseChebyshevSeries.cheb
+      ~PiecewiseChebyshevSeries.domain
+   
+   
