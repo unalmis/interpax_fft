@@ -1,5 +1,5 @@
 # standard install requirements
--r ./requirements.txt
+-r ../requirements.txt
 
 scipy >= 1.15.3, <= 1.16.3
 

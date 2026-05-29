@@ -31,7 +31,7 @@ jobs:
           sed -i '1{/^jax/d}' requirements.txt
           sed -i '1i\jax[cpu] == ${{ matrix.jax-version }}' ./requirements.txt
           cat ./requirements.txt
-          pip install -r ./requirements-dev.txt
+          pip install -r ./devtools/requirements-dev.txt
       - name: Verify dependencies
         run: |
           python --version
