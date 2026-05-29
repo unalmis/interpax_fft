@@ -47,7 +47,7 @@ setup(
     python_requires=">=3.10",
     project_urls={
         "Issues Tracker": "https://github.com/unalmis/interpax_fft/issues",
-        "Contributing": "https://github.com/unalmis/interpax_fft/blob/master/CONTRIBUTING.rst",  # noqa: E501
+        "Contributing": "https://github.com/unalmis/interpax_fft/blob/main/.github/CONTRIBUTING.rst",  # noqa: E501
         "Source Code": "https://github.com/unalmis/interpax_fft/",
         "Documentation": "https://unalmis.github.io/interpax_fft/",
     },
