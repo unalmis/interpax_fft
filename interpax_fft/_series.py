@@ -1040,12 +1040,15 @@ def _plot_intersect(
     k_transparency,
     klabel,
     hlabel,
-    markersize=plt.rcParams["lines.markersize"] * 3,
+    markersize=None,
     **kwargs,
 ):
     """Plot intersects on ``ax``."""
     if k is None:
         return
+
+    if markersize is None:
+        markersize = plt.rcParams["lines.markersize"] * 3
 
     k = jnp.atleast_1d(jnp.squeeze(k))
     assert k.ndim == 1
