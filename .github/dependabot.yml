@@ -6,11 +6,13 @@ updates:
   - package-ecosystem: "pip"
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    versioning-strategy: "increase-if-necessary"
   - package-ecosystem: "pip"
     directory: "/devtools" # Location of development requirements
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    versioning-strategy: "increase-if-necessary"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
