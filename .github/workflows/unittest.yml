@@ -50,7 +50,7 @@ jobs:
       - name: Upload coverage
         id : codecov
         if: github.actor != 'dependabot[bot]'
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           name: codecov-umbrella
