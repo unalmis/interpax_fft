@@ -8,6 +8,8 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: "increase-if-necessary"
+    exclude-paths:
+      - "devtools/**"
   - package-ecosystem: "pip"
     directory: "/devtools" # Location of development requirements
     schedule:
