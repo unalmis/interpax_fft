@@ -7,12 +7,8 @@ from typing import Any, Type, Union
 
 import jax
 import jax.numpy as jnp
-from jaxtyping import Array, Inexact, Num
+from jaxtyping import Array, Inexact
 from numpy.typing import ArrayLike
-
-# jax.typing.ArrayLike and jaxtyping.ArrayLike don't include eg tuples,lists,iterables
-# like np.ArrayLike. This combines all the usual array types
-Arrayish = Union[Array, ArrayLike]
 
 
 def isnonnegint(x: Any) -> bool:
@@ -49,7 +45,7 @@ def warnif(
         warnings.warn(msg, err)
 
 
-def asarray_inexact(x: Num[Arrayish, "..."]) -> Inexact[Array, "..."]:
+def asarray_inexact(x: ArrayLike) -> Inexact[Array, "..."]:
     """Convert to jax array with floating point dtype."""
     x = jnp.asarray(x)
     if x.weak_type:  # preserve weakly typed things like scalars

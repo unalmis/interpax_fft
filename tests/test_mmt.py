@@ -35,7 +35,7 @@ from interpax_fft import (
     take_mask,
     trig_vander,
 )
-from interpax_fft._utils_private import bijection_to_disc, flatten_mat
+from interpax_fft._utils_private import asarray_inexact, bijection_to_disc, flatten_mat
 
 
 from packaging import version
@@ -456,3 +456,9 @@ def test_take_mask():
             desired[-1] if desired.size else np.nan,
             equal_nan=True,
         )
+
+
+@pytest.mark.unit
+def test_asarray_inexact_import_and_list_input():
+    out = asarray_inexact([1, 2, 3])
+    assert jnp.issubdtype(out.dtype, jnp.inexact)
