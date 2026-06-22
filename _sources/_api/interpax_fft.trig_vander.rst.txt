@@ -1,0 +1,6 @@
+﻿interpax\_fft.trig\_vander
+==========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: trig_vander
