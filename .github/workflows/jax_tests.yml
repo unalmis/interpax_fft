@@ -18,7 +18,7 @@ jobs:
           # 0.6.0 has a bug with jax.grad, see jax#28144
           # 0.7.1 fails with equinox, see equinox#1081
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Python 3.12
         uses: actions/setup-python@v6
         with:
