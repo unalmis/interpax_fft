@@ -3,7 +3,7 @@
 import functools
 import operator
 import warnings
-from typing import Any, Type
+from typing import Any, Type, Union
 
 import jax
 import jax.numpy as jnp
