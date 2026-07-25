@@ -1,0 +1,35 @@
+﻿interpax\_fft.DoubleChebyshevSeries
+===================================
+
+.. currentmodule:: interpax_fft
+
+.. autoclass:: DoubleChebyshevSeries
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DoubleChebyshevSeries.__init__
+      ~DoubleChebyshevSeries.compute_cheb
+      ~DoubleChebyshevSeries.evaluate
+      ~DoubleChebyshevSeries.nodes
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~DoubleChebyshevSeries.X
+      ~DoubleChebyshevSeries.Y
+      ~DoubleChebyshevSeries.domain_x
+      ~DoubleChebyshevSeries.domain_y
+      ~DoubleChebyshevSeries.lobatto
+   
+   

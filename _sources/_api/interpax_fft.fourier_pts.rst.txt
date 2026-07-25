@@ -1,0 +1,6 @@
+﻿interpax\_fft.fourier\_pts
+==========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: fourier_pts

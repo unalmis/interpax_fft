@@ -1,0 +1,35 @@
+﻿interpax\_fft.FourierChebyshevSeries
+====================================
+
+.. currentmodule:: interpax_fft
+
+.. autoclass:: FourierChebyshevSeries
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FourierChebyshevSeries.__init__
+      ~FourierChebyshevSeries.compute_cheb
+      ~FourierChebyshevSeries.evaluate
+      ~FourierChebyshevSeries.harmonics
+      ~FourierChebyshevSeries.nodes
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~FourierChebyshevSeries.X
+      ~FourierChebyshevSeries.Y
+      ~FourierChebyshevSeries.domain
+      ~FourierChebyshevSeries.lobatto
+   
+   
