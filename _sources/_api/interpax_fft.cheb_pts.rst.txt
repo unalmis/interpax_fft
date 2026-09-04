@@ -1,0 +1,6 @@
+﻿interpax\_fft.cheb\_pts
+=======================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: cheb_pts

@@ -1,0 +1,6 @@
+﻿interpax\_fft.irfft\_interp2d
+=============================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: irfft_interp2d
