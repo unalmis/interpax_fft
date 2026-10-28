@@ -1,0 +1,6 @@
+﻿interpax\_fft.irfft2\_mmt\_pos
+==============================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: irfft2_mmt_pos

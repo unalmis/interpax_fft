@@ -1,0 +1,6 @@
+﻿interpax\_fft.dct\_from\_cheb
+=============================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: dct_from_cheb

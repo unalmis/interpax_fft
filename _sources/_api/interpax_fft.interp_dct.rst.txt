@@ -1,0 +1,6 @@
+﻿interpax\_fft.interp\_dct
+=========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: interp_dct

@@ -1,0 +1,6 @@
+﻿interpax\_fft.take\_mask
+========================
+
+.. currentmodule:: interpax_fft
+
+.. autofunction:: take_mask
